@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.FwmTraceDao">
+
+    <sql id="fwmTraceColumns">
+        f.qrCode AS qrCode,
+		b.prod_name AS prodName,
+        s.spec_desc  AS prodSpec,
+        p.batch_no AS batchNo,
+        o.name AS companyName,
+        plan.plan_no AS planNo,
+        ob.outBound_no AS outboundNo,
+        ob.create_date AS outboundPlanDate,
+        ob.bound_date AS outboundDate,
+        id.dealer_name AS inDealerName,
+        id.dealer_no AS inDealerNo,
+        id.address AS inDealerAddress,
+        id.phone AS inDealerPhone
+	</sql>
+
+    <sql id="fwmTraceColumnsNew">
+        f.qrCode AS qrCode,
+        o.name AS companyName,
+        a.name AS warehouseName,
+        w.address AS warehouseAddress,
+        a.name AS salesArea,
+        ia.name AS inDealerArea,
+        id.dealer_name AS inDealerName,
+        id.address AS inDealerAddress,
+        ob.receive_date AS receiveDate,
+        ob.bound_date AS outboundDate
+    </sql>
+
+    <sql id="fwmTraceDealerColumns">
+        obd.create_date AS outboundPlanDate,
+        obd.bound_no AS outboundNo,
+        obd.bound_date AS outboundDate,
+        obd.receive_date AS receiveDate,
+        id.dealer_no AS inDealerNo,
+        id.dealer_name AS inDealerName,
+        ia.name AS inDealerArea,
+        id.address AS inDealerAddress,
+        id.phone AS inDealerPhone,
+        od.dealer_no AS outDealerNo,
+        od.dealer_name AS outDealerName,
+        oa.name AS outDealerArea,
+        od.address AS outDealerAddress,
+        od.phone AS outDealerPhone
+    </sql>
+
+    <resultMap id="fwmTraceResult" type="FwmTrace"/>
+
+	<sql id="fwmTraceJoins">
+		LEFT JOIN fwm_box_code AS box ON box.box_code = f.box_code
+        LEFT JOIN sc_plan_product AS p ON (p.plan_id = f.plan_id AND p.prod_id = f.prod_id)
+        LEFT JOIN sc_plan AS plan ON plan.id = p.plan_id
+        LEFT JOIN bs_product AS b ON b.id = f.prod_id
+        LEFT JOIN fwm_spec AS s ON s.id = b.prod_spec
+        LEFT JOIN sys_office AS o ON o.id = b.company_id
+        LEFT JOIN outbound_boxcode AS obb ON (obb.box_code = box.box_code OR obb.box_code = f.qrCode OR obb.box_code = box.bigBox_code)
+        LEFT JOIN outbound_product AS op ON op.id = obb.outBound_product_id
+        LEFT JOIN outbound AS ob ON ob.id = op.outBound_id
+        LEFT JOIN bs_dealer AS id ON id.id = ob.dealer_id
+	</sql>
+
+    <sql id="fwmTraceJoinsNew">
+        LEFT JOIN fwm_box_code AS box ON box.box_code = f.box_code
+        LEFT JOIN outbound_boxcode AS obb ON (obb.box_code = box.box_code OR obb.box_code = f.qrCode OR obb.box_code = box.bigBox_code)
+        LEFT JOIN outbound_product AS op ON op.id = obb.outBound_product_id
+        LEFT JOIN bs_warehouse AS w ON w.id = op.warehouse_id
+        LEFT JOIN sys_office AS o ON o.id = w.company_id
+        LEFT JOIN sys_area AS a ON a.id = w.sales_area_id
+        LEFT JOIN outbound AS ob ON ob.id = op.outBound_id
+        LEFT JOIN bs_dealer AS id ON id.id = ob.dealer_id
+        LEFT JOIN sys_area AS ia ON ia.id = id.sales_area_id
+    </sql>
+
+    <sql id="fwmTraceDealerJoins">
+        LEFT JOIN fwm_box_code AS box ON box.box_code = f.box_code
+        LEFT JOIN outbound_dealer_boxcode AS odb ON (odb.box_code = box.box_code OR odb.box_code = f.qrCode OR odb.box_code = box.bigBox_code)
+        LEFT JOIN outbound_dealer_product AS op ON op.id = odb.bound_product_id
+        LEFT JOIN outbound_dealer AS obd ON obd.id = op.dealer_bound_id
+        LEFT JOIN bs_dealer AS id ON id.id = obd.inDealer_id
+        LEFT JOIN bs_dealer AS od ON od.id = obd.outDealer_id
+        LEFT JOIN sys_area AS ia ON ia.id = id.sales_area_id
+        LEFT JOIN sys_area AS oa ON oa.id = od.sales_area_id
+    </sql>
+
+    <select id="findTraceByFwmQrcode" resultType="FwmTrace">
+        SELECT
+        <include refid="fwmTraceColumns"/>
+        FROM fwm_qrcode AS f
+        <include refid="fwmTraceJoins"/>
+        <where>
+            f.qrCode = #{qrCode} AND op.del_flag = #{delFlag}
+        </where>
+    </select>
+
+    <select id="findTrace" resultType="FwmTrace">
+        SELECT
+        <include refid="fwmTraceColumnsNew"/>
+        FROM fwm_qrcode AS f
+        <include refid="fwmTraceJoinsNew"/>
+        <where>
+            f.qrCode = #{qrCode} AND op.del_flag = #{delFlag}
+        </where>
+    </select>
+
+    <select id="findDealerTraceByFwmQrcode" resultType="FwmTrace">
+        SELECT
+        <include refid="fwmTraceDealerColumns"/>
+        FROM fwm_qrcode AS f
+        <include refid="fwmTraceDealerJoins"/>
+        <where>
+            f.qrCode = #{qrCode} AND op.del_flag = #{delFlag}
+            ORDER BY od.create_date ASC
+        </where>
+    </select>
+
+</mapper>

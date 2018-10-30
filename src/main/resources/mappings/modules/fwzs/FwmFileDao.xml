@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.FwmFileDao">
+    
+	<sql id="fwmFileColumns">
+		a.id AS "id",
+		a.file_name AS "fileName",
+		a.file_url AS "fileUrl",
+		a.file_size AS "fileSize",
+		a.prod_id AS "prodId",
+		a.code_number AS "codeNumber",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	<sql id="fwmFileColumnsNew">
+		a.id AS "id",
+		a.file_url AS "fileUrl",
+		a.file_name AS "fileName",
+		p.prod_no AS "bsProduct.prodNo",
+		p.reg_code AS "bsProduct.regCode",
+		p.pesticide_name AS "bsProduct.pesticideName",
+		p.prod_name AS "bsProduct.prodName",
+		s.spec_desc AS "bsProduct.prodSpec.specDesc",
+		a.code_number AS "codeNumber",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="fwmFileJoins">
+		LEFT JOIN bs_product p ON a.prod_id = p.id
+		LEFT JOIN sys_office o ON p.company_id=o.id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN fwm_spec s ON p.prod_spec = s.id
+	</sql>
+    
+	<select id="get" resultType="FwmFile">
+		SELECT 
+			<include refid="fwmFileColumnsNew"/>
+		FROM fwm_file a
+		<include refid="fwmFileJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="FwmFile">
+		SELECT 
+			<include refid="fwmFileColumnsNew"/>
+		FROM fwm_file a
+		<include refid="fwmFileJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="fileName != null and fileName != ''">
+				AND LOWER (a.file_name) LIKE concat(LOWER(#{fileName}),'%')
+			</if>
+			<if test="bsProduct !=null and bsProduct.id != null and bsProduct.id != ''">
+				AND p.id = #{bsProduct.id}
+			</if>
+			<if test="createDate != null and createDate != ''">
+				AND a.create_date LIKE
+				<if test="dbName == 'oracle'">#{createDate}||'%'</if>
+				<if test="dbName == 'mssql'">#{createDate}+'%'</if>
+				<if test="dbName == 'mysql'">concat(DATE_FORMAT(#{createDate},'%Y-%m-%d'),'%')</if>
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="FwmFile">
+		SELECT 
+			<include refid="fwmFileColumnsNew"/>
+		FROM fwm_file a
+		<include refid="fwmFileJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="fileName != null and fileName != ''">
+				AND LOWER (a.file_name) LIKE concat(LOWER(#{fileName}),'%')
+			</if>
+			<if test="bsProduct !=null and bsProduct.id != null and bsProduct.id != ''">
+				AND p.id = #{bsProduct.id}
+			</if>
+			<if test="createDate != null and createDate != ''">
+				AND a.create_date LIKE
+				<if test="dbName == 'oracle'">#{createDate}||'%'</if>
+				<if test="dbName == 'mssql'">#{createDate}+'%'</if>
+				<if test="dbName == 'mysql'">concat(DATE_FORMAT(#{createDate},'%Y-%m-%d'),'%')</if>
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO fwm_file(
+			id,
+			file_name,
+			file_url,
+			file_size,
+			prod_id,
+			code_number,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{fileName},
+			#{fileUrl},
+			#{fileSize},
+			#{bsProduct.id},
+			#{codeNumber},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE fwm_file SET 	
+			file_name = #{fileName},
+			file_url = #{fileUrl},
+			file_size = #{fileSize},
+			prod_id = #{bsProduct.id},
+			code_number = #{codeNumber},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE fwm_file SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

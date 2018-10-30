@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.FwmQueryHistoryDao">
+    
+	<sql id="fwmQueryHistoryColumns">
+		a.id AS "id",
+		a.qrcode AS "qrcode",
+		a.query_date AS "queryDate",
+		a.query_type AS "queryType",
+		a.query_source AS "querySource",
+		a.query_result AS "queryResult",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.longitude AS "longitude",
+		a.latitude AS "latitude",
+		a.province AS "province",
+		a.city AS "city",
+		a.town AS "town",
+		a.address AS "address"
+	</sql>
+	
+	<sql id="fwmQueryHistoryJoins">
+	LEFT JOIN sys_user u ON u.id = a.create_by
+	LEFT JOIN sys_office o ON o.id = u.office_id
+	</sql>
+    
+	<select id="get" resultType="FwmQueryHistory">
+		SELECT 
+		<include refid="fwmQueryHistoryColumns"/>
+		FROM fwm_query_history a
+		<include refid="fwmQueryHistoryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="FwmQueryHistory">
+		SELECT 
+		<include refid="fwmQueryHistoryColumns"/>
+		FROM fwm_query_history a
+		<include refid="fwmQueryHistoryJoins"/>
+		<where>
+			<if test="qrcode != null and qrcode != ''">
+				AND a.qrCode = #{qrcode}
+			</if>
+			<if test="createDate != null and createDate != ''">
+				AND a.create_date LIKE 
+				<if test="dbName == 'oracle'">#{createDate}||'%'</if>
+				<if test="dbName == 'mssql'">#{createDate}+'%'</if>
+				<if test="dbName == 'mysql'">concat(DATE_FORMAT(#{createDate},'%Y-%m-%d'),'%')</if>
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findInvalidList" resultType="FwmQueryHistory">
+		SELECT
+		<include refid="fwmQueryHistoryColumns"/>
+		FROM fwm_qrcode_invalid a
+		<include refid="fwmQueryHistoryJoins"/>
+		<where>
+			<if test="qrcode != null and qrcode != ''">
+				AND a.qrCode = #{qrcode}
+			</if>
+			<if test="createDate != null and createDate != ''">
+				AND a.create_date LIKE
+				<if test="dbName == 'oracle'">#{createDate}||'%'</if>
+				<if test="dbName == 'mssql'">#{createDate}+'%'</if>
+				<if test="dbName == 'mysql'">concat(DATE_FORMAT(#{createDate},'%Y-%m-%d'),'%')</if>
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="FwmQueryHistory">
+		SELECT 
+			<include refid="fwmQueryHistoryColumns"/>
+		FROM fwm_query_history a
+		<include refid="fwmQueryHistoryJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO fwm_query_history(
+			id,
+			qrcode,
+			query_date,
+			query_type,
+			query_source,
+			query_result,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			longitude,
+			latitude,
+			province,
+			city,
+			town,
+			address
+		) VALUES (
+			#{id},
+			#{qrcode},
+			#{queryDate},
+			#{queryType},
+			#{querySource},
+			#{queryResult},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{longitude},
+			#{latitude},
+			#{province},
+			#{city},
+			#{town},
+			#{address}
+		)
+	</insert>
+
+	<insert id="insertInvalidFWMCode">
+		INSERT INTO fwm_qrcode_invalid(
+		id,
+		qrcode,
+		query_date,
+		query_type,
+		query_source,
+		query_result,
+		create_by,
+		create_date,
+		update_by,
+		update_date,
+		longitude,
+		latitude,
+		province,
+		city,
+		town,
+		address
+		) VALUES (
+		#{id},
+		#{qrcode},
+		#{queryDate},
+		#{queryType},
+		#{querySource},
+		#{queryResult},
+		#{createBy.id},
+		#{createDate},
+		#{updateBy.id},
+		#{updateDate},
+		#{longitude},
+		#{latitude},
+		#{province},
+		#{city},
+		#{town},
+		#{address}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE fwm_query_history SET
+		qrcode = #{qrcode},
+		query_date = #{queryDate},
+		query_type = #{queryType},
+		query_source = #{querySource},
+		query_result = #{queryResult},
+		update_by = #{updateBy.id},
+		update_date = #{updateDate},
+		longitude = #{longitude},
+		latitude = #{latitude},
+		province = #{province},
+		city = #{city},
+		town = #{town},
+		address=#{address}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM fwm_query_history
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

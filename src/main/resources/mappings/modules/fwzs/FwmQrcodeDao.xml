@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.FwmQrcodeDao">
+
+	<sql id="fwmQrcodeColumns">
+		a.id AS "id",
+		a.qrcode AS "qrcode",
+		a.box_code AS "boxCode",
+		a.plan_id AS "planId",
+		a.status AS "status",
+		a.select_num AS "selectNum",
+		a.prod_id AS "prodId",
+		a.file_id AS "fileId",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	<sql id="fwmQrcodeColumnsNew">
+		a.id AS "id",
+		a.qrcode AS "qrcode",
+		a.box_code AS "fwmBoxCode.id",
+		c.box_code AS "fwmBoxCode.boxCode",
+		a.plan_id AS "scPlan.id",
+		n.plan_no AS "scPlan.planNo",
+		m.batch_no AS "scPlan.batchNo",
+		n.qc_by AS "scPlan.qcBy.id",
+		n.update_date AS "scPlan.updateDate",
+		n.status AS "status",
+		a.select_num AS "selectNum",
+		a.prod_id AS "bsProduct.id",
+		p.prod_name AS "bsProduct.prodName",
+		p.reg_crop AS "bsProduct.regCrop",
+		p.reg_code AS "bsProduct.regCode",
+		s.spec_code AS "bsProduct.prodSpec.specCode",
+		s.spec_desc AS "bsProduct.prodSpec.specDesc",
+		m.check_plan_url AS "bsProduct.checkPlanUrl",
+		p.img_url AS "bsProduct.imgUrl",
+		p.remark AS "bsProduct.remark",
+		o.name AS "bsProduct.company.name",
+		o.id AS "bsProduct.company.id",
+		a.file_id AS "fwmFile.id",
+		f.file_name AS "fwmFile.fileName",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	<sql id="fwmQrcodeJoins">
+		LEFT JOIN bs_product p ON a.prod_id = p.id
+		LEFT JOIN fwm_spec s ON p.prod_spec = s.id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN sys_office o ON  o.id=p.company_id
+		LEFT JOIN fwm_file f ON a.file_id = f.id
+		LEFT JOIN fwm_box_code c ON a.box_code = c.id
+		LEFT JOIN sc_plan n ON a.plan_id = n.id
+		LEFT JOIN sc_plan_product m ON a.plan_id = m.plan_id AND a.prod_id = m.prod_id
+	</sql>
+
+	<select id="get" resultType="FwmQrcode">
+		SELECT
+		<include refid="fwmQrcodeColumnsNew" />
+		FROM fwm_qrcode a
+		<include refid="fwmQrcodeJoins" />
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultType="FwmQrcode">
+		SELECT
+		<include refid="fwmQrcodeColumnsNew" />
+		FROM fwm_qrcode a
+		<include refid="fwmQrcodeJoins" />
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="qrcode != null and qrcode != ''">
+				AND a.qrcode LIKE
+				<if test="dbName == 'oracle'">#{qrcode}||'%'</if>
+				<if test="dbName == 'mssql'">#{qrcode}+'%'</if>
+				<if test="dbName == 'mysql'">concat(#{qrcode},'%')</if>
+			</if>
+			<if
+				test="fwmBoxCode != null and fwmBoxCode.id != null and fwmBoxCode.id != ''">
+				AND a.box_code LIKE
+				<if test="dbName == 'oracle'">#{fwmBoxCode.id}||'%'</if>
+				<if test="dbName == 'mssql'">#{fwmBoxCode.id}+'%'</if>
+				<if test="dbName == 'mysql'">concat(#{fwmBoxCode.id},'%')</if>
+			</if>
+			<if test="scPlan != null and scPlan.id != null and scPlan.id != ''">
+				AND a.plan_id LIKE
+				<if test="dbName == 'oracle'">#{scPlan.id}||'%'</if>
+				<if test="dbName == 'mssql'">#{scPlan.id}+'%'</if>
+				<if test="dbName == 'mysql'">concat(#{scPlan.id},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if
+				test="bsProduct != null and bsProduct.id != null and bsProduct.id != ''">
+				AND a.prod_id = #{bsProduct.id}
+			</if>
+			<if test="fwmFile != null and fwmFile.id != null and fwmFile.id != ''">
+				AND a.file_id = #{fwmFile.id}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="FwmQrcode">
+		SELECT
+		<include refid="fwmQrcodeColumnsNew" />
+		FROM fwm_qrcode a
+		<include refid="fwmQrcodeJoins" />
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+		INSERT INTO fwm_qrcode(
+		id,
+		qrcode,
+		box_code,
+		plan_id,
+		status,
+		select_num,
+		prod_id,
+		file_id,
+		create_by,
+		create_date,
+		update_by,
+		update_date,
+		del_flag
+		) VALUES (
+		#{id},
+		#{qrcode},
+		#{fwmBoxCode.id},
+		#{scPlan.id},
+		#{status},
+		#{selectNum},
+		#{bsProduct.id},
+		#{fwmFile.id},
+		#{createBy.id},
+		#{createDate},
+		#{updateBy.id},
+		#{updateDate},
+		#{delFlag}
+		)
+	</insert>
+	<insert id="saveByBatch" parameterType="java.util.List">
+		INSERT INTO fwm_qrcode(
+		id,
+		qrcode,
+		box_code,
+		plan_id,
+		status,
+		select_num,
+		prod_id,
+		file_id,
+		create_by,
+		create_date,
+		update_by,
+		update_date,
+		del_flag
+		) VALUES
+		<foreach collection="fwmQrcodes" item="item" index="index"
+			separator=",">
+			(#{item.id},
+			#{item.qrcode},
+			#{item.fwmBoxCode.id},
+			#{item.scPlan.id},
+			#{item.status},
+			#{item.selectNum},
+			#{item.bsProduct.id},
+			#{item.fwmFile.id},
+			#{item.createBy.id},
+			#{item.createDate},
+			#{item.updateBy.id},
+			#{item.updateDate},
+			#{item.delFlag}
+			)
+		</foreach>
+	</insert>
+	<update id="update">
+		UPDATE fwm_qrcode SET
+		qrcode = #{qrcode},
+		box_code = #{fwmBoxCode.id},
+		plan_id = #{scPlan.id},
+		status = #{status},
+		select_num = #{selectNum},
+		prod_id = #{bsProduct.id},
+		file_id = #{fwmFile.id},
+		update_by = #{updateBy.id},
+		update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	<update id="updateStatus">
+		UPDATE fwm_qrcode SET
+		status = #{type}
+		WHERE id = #{id}
+	</update>
+	<update id="updateSelectNum">
+		UPDATE fwm_qrcode SET
+		select_num = select_num + 1
+		WHERE qrCode = #{qrCode}
+	</update>
+    <update id="updatePlanByFileId">
+        UPDATE fwm_qrcode SET
+        plan_id = #{planId}
+        WHERE file_id= #{fileId}
+    </update>
+	<update id="delete">
+		UPDATE fwm_qrcode SET
+		del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<select id="getByQrcode" resultType="FwmQrcode">
+		SELECT
+		<include refid="fwmQrcodeColumnsNew" />
+		FROM fwm_qrcode a
+		<include refid="fwmQrcodeJoins" />
+		WHERE a.qrCode = #{qrCode} and a.status=1 ORDER BY a.create_date desc
+		limit 1
+	</select>
+
+    <select id="findQrCodeCount" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM fwm_qrcode
+        WHERE del_flag= #{delFlag} AND qrCode = #{qrcode}
+    </select>
+
+    <select id="getOfficeInfoByQrcode" resultType="Office">
+        SELECT
+            o.id, o.name, o.phone, o.fax, o.email, o.website, o.address, o.summary, a.name AS "area.name"
+        FROM
+            sys_office o
+            LEFT JOIN sys_area a ON o.area_id = a.id
+            LEFT JOIN bs_product p ON p.company_id = o.id
+            LEFT JOIN fwm_qrcode q ON q.prod_id = p.id
+        WHERE q.qrCode = #{qrCode}
+    </select>
+
+    <select id="getBsProductExtendAttributes" resultType="BsProduct">
+        SELECT
+            p.id,
+            p.prod_no AS prodNo,
+            p.prod_name AS prodName,
+            p.prod_parameter AS prodParameter,
+            p.prod_feature AS prodFeature,
+            p.prod_consideration AS prodConsideration
+        FROM
+            fwm_qrcode q LEFT JOIN bs_product p ON p.id = q.prod_id
+        WHERE q.qrCode = #{qrCode}
+    </select>
+	
+</mapper>

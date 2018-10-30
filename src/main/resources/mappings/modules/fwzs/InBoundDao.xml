@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.InBoundDao">
+
+    <sql id="inBoundColumns">
+        a.id,
+        a.plan_id,
+        a.prod_id,
+        a.warehouse_id,
+        a.inbound_number,
+        a.inbound_date,
+        a.remarks,
+        a.del_flag AS "delFlag"
+    </sql>
+
+    <sql id="inBoundJoins">
+        LEFT JOIN sc_plan p ON a.plan_id = p.id
+        LEFT JOIN bs_product b ON a.prod_id = b.id
+        LEFT JOIN bs_warehouse w ON a.warehouse_id = w.id
+        LEFT JOIN sc_plan_product pp ON pp.prod_id = a.prod_id AND pp.plan_id = a.plan_id
+        LEFT JOIN sys_office o ON b.company_id=o.id
+        LEFT JOIN sys_user u ON u.id = p.create_by
+    </sql>
+
+    <sql id="inBoundColumnsNew">
+        a.id AS id,
+        p.id AS "p.id",
+        p.plan_no AS "p.No",
+        b.id AS "b.id",
+        b.prod_name AS "b.prodName",
+        b.pack_rate AS "b.packRate",
+        pp.batch_no AS "pp.batchNo",
+        w.id AS "w.id",
+        w.name AS "w.name",
+        a.inbound_number AS "inboundNumber",
+        a.inbound_date AS "inBoundDate",
+        a.remarks,
+        a.del_flag AS "delFlag"
+    </sql>
+
+    <resultMap id="inBoundResult" type="InBound">
+        <id property="id" column="id"/>
+        <result property="inBoundNumber" column="inboundNumber"/>
+        <result property="inBoundDate" column="inBoundDate"/>
+        <result property="remarks" column="remarks"/>
+        <result property="delFlag" column="delFlag"/>
+
+        <association property="scPlan" javaType="ScPlan">
+            <id property="id" column="p.id"/>
+            <result property="planNo" column="p.No"/>
+        </association>
+        <association property="warehouse" javaType="Warehouse">
+            <id property="id" column="w.id"/>
+            <result property="name" column="w.name"/>
+        </association>
+        <association property="bsProduct" javaType="BsProduct">
+            <id property="id" column="b.id"/>
+            <result property="prodName" column="b.prodName"/>
+            <result property="packRate" column="b.packRate"/>
+            <result property="batchNo" column="pp.batchNo"/>
+        </association>
+    </resultMap>
+
+    <select id="get" resultType="InBound">
+        SELECT
+        <include refid="inBoundColumns"/>
+        FROM inbound a
+        <include refid="inBoundJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="findList" resultMap="inBoundResult">
+        SELECT
+        <include refid="inBoundColumnsNew"/>
+        FROM inBound a
+        <include refid="inBoundJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.inbound_date BETWEEN #{beginDate} AND #{endDate}
+            <if test="bsProduct != null and bsProduct.id != null and bsProduct.id != ''">
+                AND b.id = #{bsProduct.id}
+            </if>
+            <if test="scPlan != null and scPlan.planNo != null and scPlan.planNo != ''">
+                AND LOWER (p.plan_no) LIKE
+                <if test="dbName == 'oracle'">#{scPlan.planNo}||'%'</if>
+                <if test="dbName == 'mssql'">#{scPlan.planNo}+'%'</if>
+                <if test="dbName == 'mysql'">concat(LOWER (#{scPlan.planNo}),'%')</if>
+            </if>
+            ${sqlMap.dsf}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY p.plan_no, a.inbound_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO inbound(
+        id,
+        plan_id,
+        prod_id,
+        warehouse_id,
+        inbound_number,
+        inbound_date,
+        operator,
+        remarks,
+        del_flag
+        ) VALUES (
+        #{id},
+        #{scPlan.id},
+        #{bsProduct.id},
+        #{warehouse.id},
+        #{inBoundNumber},
+        #{inBoundDate},
+        #{operator},
+        #{remarks},
+        #{delFlag}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE inbound SET
+        inBound_id=#{inBoundId},
+        prod_id=#{prodId},
+        warehouse_id=#{warehouseId},
+        plan_number=#{planNumber},
+        real_number=#{realNumber},
+        operator=#{operator},
+        remarks = #{remarks}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateRealNumber">
+        UPDATE inbound SET
+        real_number = #{realNumber}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE inbound SET
+        del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteByInBoundIds" parameterType="list">
+        UPDATE inbound SET
+        del_flag = #{delFlag}, real_number = 0
+        <if test="inBoundIdList != null and inBoundIdList.size>0">
+            WHERE inBound_id IN
+            <foreach collection="inBoundIdList" item="inBoundId" index="index" open="(" close=")"
+                     separator=",">
+                #{inBoundId}
+            </foreach>
+        </if>
+    </update>
+
+    <select id="findQrCodeById" resultType="Qrcode2BoxcodeMapping">
+        SELECT
+        f.qrCode,
+        b.box_code AS "boxCode",
+        b.bigBox_code AS "bigBoxCode"
+        FROM
+        fwm_qrcode AS f LEFT JOIN fwm_box_code AS b ON b.id = f.box_code
+        WHERE f.plan_id = #{planId}
+        <if test="prodId != null and prodId != ''">
+            AND prod_id = #{prodId}
+        </if>
+        ORDER BY b.bigBox_code, f.box_code
+    </select>
+
+</mapper>

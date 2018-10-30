@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.api.dao.BsProductApiDao">
+    
+	<sql id="bsProductColumns">
+		a.id AS "id",
+		a.prod_no AS "prodNo",
+		a.pesticide_name AS "pesticideName",
+		a.prod_name AS "prodName", 
+		s.spec_desc AS "prodSpec",
+		a.pack_rate AS "packRate", 
+		a.prod_unit AS "prodUnit"
+		
+	</sql>
+	
+	<sql id="bsProductJoins">
+		LEFT JOIN sys_office o ON o.id = a.company_id
+		LEFT JOIN fwm_spec s on a.prod_spec=s.id 
+	</sql>
+	
+    
+	<select id="get" resultType="BsProductVo">
+		SELECT 
+			<include refid="bsProductColumns"/>
+		FROM bs_product a
+		<include refid="bsProductJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="BsProductVo">
+		SELECT 
+			<include refid="bsProductColumns"/>
+		FROM bs_product a
+		<include refid="bsProductJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="officeId != null and officeId != ''">
+				AND a.company_id = #{officeId}
+			</if>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<update id="update">
+		UPDATE sc_plan SET 	
+			real_number = #{realNumber},
+			status = #{status},
+			qc_by = #{qcBy},
+			operate_by = #{operateBy},
+			update_date = #{updateDate}
+		WHERE id = #{planId}
+	</update>
+</mapper>

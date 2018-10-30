@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.DealerBound2ProductMappingDao">
+
+    <sql id="dealerBound2ProductMappingColumns">
+        m.id,
+        m.dealer_bound_id AS "dealerBoundId",
+        m.prod_id AS "prodId",
+        m.plan_number AS "planNumber",
+        m.real_number AS "realNumber",
+        m.remarks,
+        m.del_flag AS "delFlag"
+    </sql>
+
+    <sql id="dealerBound2ProductMappingJoins">
+
+    </sql>
+
+    <select id="get" resultType="DealerBound2ProductMapping">
+        SELECT
+        <include refid="dealerBound2ProductMappingColumns"/>
+        FROM outbound_dealer_product m
+        WHERE m.id = #{id}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO outbound_dealer_product(
+            id,
+            dealer_bound_id,
+            prod_id,
+            plan_number,
+            real_number,
+            remarks,
+            del_flag
+        ) VALUES (
+            #{id},
+            #{dealerBoundId},
+            #{prodId},
+            #{planNumber},
+            #{realNumber},
+            #{remarks},
+            #{delFlag}
+            )
+    </insert>
+
+    <update id="update">
+        UPDATE outbound_dealer_product SET
+            dealer_bound_id=#{dealerBoundId},
+            prod_id=#{prodId},
+            plan_number=#{planNumber},
+            real_number=#{realNumber},
+            remarks = #{remarks}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateRealNumber">
+        UPDATE outbound_dealer_product SET
+        real_number = #{realNumber}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE outbound_dealer_product SET
+        del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteByDealerBoundIds" parameterType="list">
+        UPDATE outbound_dealer_product SET
+        del_flag = #{delFlag}
+        <if test="dealerBoundIdList != null and dealerBoundIdList.size>0">
+            WHERE dealer_bound_id IN
+            <foreach collection="dealerBoundIdList" item="dealerBoundId" index="index" open="(" close=")"
+                     separator=",">
+                #{dealerBoundId}
+            </foreach>
+        </if>
+    </update>
+
+    <select id="getMappingsByDealerBoundIds" parameterType="list" resultType="DealerBound2ProductMapping">
+        SELECT
+        <include refid="dealerBound2ProductMappingColumns"/>
+        FROM outbound_dealer_product AS m
+        <if test="dealerBoundIdList != null and dealerBoundIdList.size>0">
+            WHERE dealer_bound_id IN
+            <foreach collection="dealerBoundIdList" item="dealerBoundId" index="index" open="(" close=")"
+                     separator=",">
+                #{dealerBoundId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="findOutBoundBoxCount" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM outbound_dealer_boxcode AS obd
+        WHERE obd.del_flag = #{delFlag} AND obd.box_code= #{boxCode} AND obd.bound_product_id = #{dealerBoundId}
+    </select>
+
+</mapper>

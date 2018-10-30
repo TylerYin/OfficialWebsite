@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.FwmBigboxCodeDao">
+    
+	<sql id="fwmBigboxCodeColumns">
+		a.id AS "id",
+		a.big_box_code AS "bigBoxCode",
+		a.plan_id AS "planId",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="fwmBigboxCodeJoins">
+	</sql>
+    
+	<select id="get" resultType="FwmBigboxCode">
+		SELECT 
+			<include refid="fwmBigboxCodeColumns"/>
+		FROM fwm_bigbox_code a
+		<include refid="fwmBigboxCodeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="FwmBigboxCode">
+		SELECT 
+			<include refid="fwmBigboxCodeColumns"/>
+		FROM fwm_bigbox_code a
+		<include refid="fwmBigboxCodeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="bigBoxCode != null and bigBoxCode != ''">
+				AND a.big_box_code = #{bigBoxCode}
+			</if>
+			<if test="planId != null and planId != ''">
+				AND a.plan_id = #{planId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="FwmBigboxCode">
+		SELECT 
+			<include refid="fwmBigboxCodeColumns"/>
+		FROM fwm_bigbox_code a
+		<include refid="fwmBigboxCodeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO fwm_bigbox_code(
+			id,
+			big_box_code,
+			plan_id,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{bigBoxCode},
+			#{planId},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE fwm_bigbox_code SET 	
+			big_box_code = #{bigBoxCode},
+			plan_id = #{planId},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE fwm_bigbox_code SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.FwmFileStatisticsDao">
+
+    <sql id="fwmStatisticsColumns">
+        o.name AS "company.name",
+        p.prod_name AS "productName",
+        SUM(a.code_number) AS "codeCount"
+    </sql>
+
+    <sql id="fwmFileJoins">
+		LEFT JOIN bs_product p ON a.prod_id = p.id
+		LEFT JOIN sys_office o ON p.company_id=o.id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN fwm_spec s ON p.prod_spec = s.id
+	</sql>
+
+    <select id="findList" resultType="FwmFileStatistics">
+        SELECT
+        <include refid="fwmStatisticsColumns"/>
+        FROM fwm_file a
+        <include refid="fwmFileJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL} AND a.create_date BETWEEN
+            <if test="dbName == 'oracle'">
+                #{beginDate}||'%' AND #{endDate}||'%'
+            </if>
+            <if test="dbName == 'mssql'">
+                #{beginDate}+'%' AND #{endDate}+'%'
+            </if>
+            <if test="dbName == 'mysql'">
+                #{beginDate} AND DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+            </if>
+            <if test="bsProduct !=null and bsProduct.id != null and bsProduct.id != ''">
+                AND p.id = #{bsProduct.id}
+            </if>
+        </where>
+        GROUP BY o.id
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findListByCompany" resultType="FwmFileStatistics">
+        SELECT
+        <include refid="fwmStatisticsColumns"/>
+        FROM fwm_file a
+        <include refid="fwmFileJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL} AND o.id = #{company.id} AND a.create_date BETWEEN
+            <if test="dbName == 'oracle'">
+                #{beginDate}||'%' AND #{endDate}||'%'
+            </if>
+            <if test="dbName == 'mssql'">
+                #{beginDate}+'%' AND #{endDate}+'%'
+            </if>
+            <if test="dbName == 'mysql'">
+               #{beginDate} AND DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+            </if>
+            <if test="bsProduct !=null and bsProduct.id != null and bsProduct.id != ''">
+                AND p.id = #{bsProduct.id}
+            </if>
+        </where>
+        GROUP BY p.id
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findFwmFileStatistics" resultType="FwmFileStatistics">
+        SELECT p.prod_name AS "productName", IFNULL(SUM(a.code_number),0) AS "codeCount"
+        FROM fwm_file a
+        LEFT JOIN bs_product p ON a.prod_id = p.id
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL} AND a.create_date BETWEEN
+            <if test="dbName == 'oracle'">
+                #{beginDate}||'%' AND #{endDate}||'%'
+            </if>
+            <if test="dbName == 'mssql'">
+                #{beginDate}+'%' AND #{endDate}+'%'
+            </if>
+            <if test="dbName == 'mysql'">
+                #{beginDate} AND DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+            </if>
+            <if test="company !=null and company.id != null and company.id != ''">
+                AND p.company_id = #{company.id}
+            </if>
+        </where>
+        GROUP BY p.id
+        ORDER BY codeCount DESC
+    </select>
+
+    <select id="findTotalCount" resultType="java.lang.Long">
+        SELECT
+        IFNULL(SUM(a.code_number),0) AS "codeCount"
+        FROM fwm_file a
+        <include refid="fwmFileJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL} AND a.create_date BETWEEN
+            <if test="dbName == 'oracle'">
+                #{beginDate}||'%' AND #{endDate}||'%'
+            </if>
+            <if test="dbName == 'mssql'">
+                #{beginDate}+'%' AND #{endDate}+'%'
+            </if>
+            <if test="dbName == 'mysql'">
+                #{beginDate} AND DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+            </if>
+            <if test="bsProduct !=null and bsProduct.id != null and bsProduct.id != ''">
+                AND p.id = #{bsProduct.id}
+            </if>
+        </where>
+    </select>
+
+    <select id="findTotalCountByCompany" resultType="java.lang.Long">
+        SELECT
+        IFNULL(SUM(a.code_number),0) AS "codeCount"
+        FROM fwm_file a
+        <include refid="fwmFileJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL} AND o.id = #{company.id} AND a.create_date BETWEEN #{beginDate} AND DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+            <if test="bsProduct !=null and bsProduct.id != null and bsProduct.id != ''">
+                AND p.id = #{bsProduct.id}
+            </if>
+        </where>
+    </select>
+	
+</mapper>

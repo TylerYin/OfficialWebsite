@@ -1,0 +1,126 @@
+
+/*弹出提示框*/
+/*通用标签元素设置*/
+ul,ol,li{list-style:none; margin:0; padding:0;}
+
+input[type=button], input[type=submit] {
+    -webkit-appearance: button;
+}
+body {margin:0; padding:0; }
+/*弹出框遮罩层*/
+.TJtczmark {
+    background-color: rgba(0,0,0,0.8);
+    position: fixed;
+    left: 0;
+    top: 0;
+    display: block;
+    z-index: 100;
+}
+
+.TJbigimgWarp {
+    position: fixed;
+    z-index: 200;  
+    display: block;
+}
+
+/*弹出框 */
+.TJtcbox {
+    width: 280px;
+    border-radius: 4px;
+    position: fixed;
+    z-index: 200;
+    background-color: white;
+    display: block;
+ 
+}
+
+/*新弹出框，包含在mark里*/
+.TJtcboxnew {
+    width: 280px;
+    border-radius: 4px;
+    background-color: white;
+}
+
+/*弹出内容外包裹（li元素）*/
+.Ttccontentwrap {
+    border-radius: 4px 4px 0 0;
+    text-align: center;
+    position: relative;
+    padding: 30px 0px;
+}
+     /*内容（p元素）*/
+    .Ttccontentwrap p {
+        font-size: 17px;
+        font-weight: 700;
+        color: #000;
+    }
+
+/*弹出选择外包裹（li元素）*/
+.Ttcchoosewrap {
+border-top: 1px solid #d0cccc;
+}
+/*选择 按钮（一个a元素）*/
+ .Ttcchoosewrapone a {
+           
+            width: 100%;
+            display: inline-block;
+            text-align: center;
+            height: 35px;
+            line-height: 35px;
+            font-size: 17px;
+        }
+
+/*选择 按钮（两个a元素）*/
+ .Ttcchoosewraptwo a {
+            float: left;
+            width: 50%;
+            display: inline-block;
+            text-align: center;
+            height: 35px;
+            line-height: 35px;
+            font-size: 17px;
+        }
+  /*选择（取消）*/
+.Ttcchooseno {
+ border-right: 1px solid #d0cccc;
+  color: #333
+}
+  /*选择（确定）*/
+.Ttcchooseyes {
+color: #007aff
+}
+
+/*加载中*/
+.TJJZZmark {
+    position: fixed;
+    left: 0;
+    top: 0;    
+    background-color: rgba(0,0,0,0.3);
+    z-index: 10;
+}
+    .TJJZZmark > div {
+        position: absolute;
+        padding: 8px 30px 8px 10px;
+        background-color: #464343;
+        border-radius: 10px;
+        z-index: 20;
+        font-size: 0;
+        display:none;
+    }
+    .TJJZZmark img {
+        height: 50px;
+        vertical-align: middle;
+    }
+    .TJJZZmark span {
+        color: white;
+        vertical-align: middle;
+        font-size: 17px;
+    }
+
+   
+
+
+
+
+
+

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.FwmQueryDao">
+
+	<sql id="fwmQueryColumns">
+		c.qrCode,
+		c.status,
+		c.select_num AS selectNum,
+		b.prod_no AS prodNo,
+		b.pesticide_name AS pesticideName,
+		b.prod_name AS prodName,
+		s.spec_desc AS specDesc,
+		b.pack_rate AS packRate,
+		b.reg_crop AS regCrop,
+		o.name AS corpName,
+		f.file_name AS fileName,
+		c.create_date AS createDate
+	</sql>
+
+    <sql id="fwmQueryColumnsNew">
+        c.qrCode,
+        c.status,
+        c.select_num AS selectNum,
+        b.prod_no AS prodNo,
+        b.pesticide_name AS pesticideName,
+        b.prod_name AS prodName,
+        b.remark AS prodDesc,
+        scp.batch_no AS batchNo,
+        u.name AS qcBy,
+        s.spec_desc AS specDesc,
+        b.pack_rate AS packRate,
+        b.reg_crop AS regCrop,
+        sc.status AS qcStatus,
+        o.name AS corpName
+    </sql>
+
+	<sql id="fwmQueryJoins">
+		LEFT JOIN bs_product AS b ON c.prod_id = b.id
+    	LEFT JOIN fwm_spec AS s ON b.prod_spec = s.id
+    	LEFT JOIN sys_office AS o ON o.id = b.company_id
+    	LEFT JOIN fwm_file AS f ON c.file_id=f.id
+	</sql>
+
+    <sql id="fwmQueryJoinsNew">
+        LEFT JOIN bs_product AS b ON c.prod_id = b.id
+        LEFT JOIN fwm_spec AS s ON b.prod_spec = s.id
+        LEFT JOIN sys_office AS o ON o.id = b.company_id
+        LEFT JOIN sc_plan AS sc ON sc.id = c.plan_id
+        LEFT JOIN sys_user AS u ON u.id = sc.qc_by
+        LEFT JOIN sc_plan_product AS scp ON scp.plan_id = c.plan_id AND scp.prod_id = b.id
+    </sql>
+
+	<select id="getFwmInfoByQrCode" resultType="FwmQuery">
+		SELECT
+		<include refid="fwmQueryColumns" />
+		FROM fwm_qrcode AS c
+		<include refid="fwmQueryJoins" />
+		WHERE c.qrCode = #{qrCode} AND c.create_by = #{user} AND c.del_flag = #{delFlag}
+	</select>
+
+    <select id="getFwmInfo" resultType="FwmQuery">
+        SELECT
+        <include refid="fwmQueryColumnsNew" />
+        FROM fwm_qrcode AS c
+        <include refid="fwmQueryJoinsNew" />
+        WHERE c.qrCode = #{qrCode} AND c.del_flag = #{delFlag}
+    </select>
+
+</mapper>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.OutBound2ProductMappingDao">
+
+    <sql id="outBound2ProductMappingColumns">
+        m.id,
+        m.outBound_id,
+        m.prod_id,
+        m.warehouse_id,
+        m.plan_number,
+        m.real_number,
+        m.remarks,
+        m.del_flag AS "delFlag"
+    </sql>
+
+    <sql id="outBound2ProductMappingJoins">
+
+    </sql>
+
+    <select id="get" resultType="OutBound2ProductMapping">
+        SELECT
+        <include refid="outBound2ProductMappingColumns"/>
+        FROM outbound_product m
+        <include refid="outBound2ProductMappingJoins"/>
+        WHERE m.id = #{id}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO outbound_product(
+            id,
+            outBound_id,
+            prod_id,
+            warehouse_id,
+            plan_number,
+            real_number,
+            remarks,
+            del_flag
+        ) VALUES (
+            #{id},
+            #{outBoundId},
+            #{prodId},
+            #{warehouseId},
+            #{planNumber},
+            #{realNumber},
+            #{remarks},
+            #{delFlag}
+            )
+    </insert>
+
+    <update id="update">
+        UPDATE outbound_product SET
+            outBound_id=#{outBoundId},
+            prod_id=#{prodId},
+            warehouse_id=#{warehouseId},
+            plan_number=#{planNumber},
+            real_number=#{realNumber},
+            remarks = #{remarks}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateRealNumber">
+        UPDATE outbound_product SET
+        real_number = #{realNumber}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE outbound_product SET
+        del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteByOutBoundIds" parameterType="list">
+        UPDATE outbound_product SET
+        del_flag = #{delFlag}
+        <if test="outBoundIdList != null and outBoundIdList.size>0">
+            WHERE outBound_id IN
+            <foreach collection="outBoundIdList" item="outBoundId" index="index" open="(" close=")"
+                     separator=",">
+                #{outBoundId}
+            </foreach>
+        </if>
+    </update>
+
+    <select id="getMappingsByOutBoundIds" parameterType="list" resultType="OutBound2ProductMapping">
+        SELECT
+        <include refid="outBound2ProductMappingColumns"/>
+        FROM outbound_product AS m
+        <if test="outBoundIdList != null and outBoundIdList.size>0">
+            WHERE outBound_id IN
+            <foreach collection="outBoundIdList" item="outBoundId" index="index" open="(" close=")"
+                     separator=",">
+                #{outBoundId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="findOutBoundBoxCount" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM outbound_boxcode AS ob
+        WHERE ob.del_flag = #{delFlag} AND ob.box_code= #{boxCode}
+    </select>
+
+</mapper>

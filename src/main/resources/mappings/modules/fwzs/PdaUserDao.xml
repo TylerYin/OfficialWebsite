@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.PdaUserDao">
+
+    <sql id="pdaUserColumns">
+		a.id AS "id",
+		a.no AS "no",
+		a.name AS "name",
+		a.mobile AS "mobile",
+		a.company_id AS "company.id",
+		a.dealer_id AS "dealer.id",
+		a.login_name AS "loginName",
+		a.password AS "password",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.login_flag AS "loginFlag",
+		a.del_flag AS "delFlag",
+		o.id AS "companyId",
+		o.name AS "companyName",
+		d.id AS "dealerId",
+		d.dealer_name AS "dealerName"
+	</sql>
+
+    <sql id="pdaUserColumnsNew">
+        a.id AS "id",
+        a.no AS "no",
+        a.name AS "name",
+        a.company_id AS "company.id",
+        a.dealer_id AS "dealer.id",
+        a.login_name AS "loginName",
+        a.password AS "password",
+        a.remarks AS "remarks",
+        a.login_flag AS "loginFlag",
+        a.del_flag AS "delFlag"
+    </sql>
+
+    <resultMap id="pdaUserResult" type="PDAUser">
+        <id property="id" column="id"/>
+        <result property="no" column="no"/>
+        <result property="name" column="name"/>
+        <result property="mobile" column="mobile"/>
+        <result property="loginName" column="loginName"/>
+        <result property="password" column="password"/>
+        <result property="loginFlag" column="loginFlag"/>
+        <result property="delFlag" column="delFlag"/>
+        <result property="createDate" column="createDate"/>
+        <result property="createBy.id" column="createBy.id"/>
+        <result property="updateDate" column="updateDate"/>
+        <result property="updateBy.id" column="updateBy.id"/>
+        <result property="remarks" column="remarks"/>
+        <association property="company" javaType="Office">
+            <id property="id" column="companyId"/>
+            <result property="name" column="companyName"/>
+        </association>
+        <association property="dealer" javaType="Dealer">
+            <id property="id" column="dealerId"/>
+            <result property="name" column="dealerName"/>
+        </association>
+    </resultMap>
+
+    <sql id="pdaUserJoins">
+		LEFT JOIN bs_dealer d ON d.id = a.dealer_id
+	    LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN sys_office o ON u.company_id=o.id
+	</sql>
+
+    <select id="get" resultMap="pdaUserResult">
+        SELECT
+        <include refid="pdaUserColumns"/>
+        FROM bs_pda_user a
+        <include refid="pdaUserJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="getByLoginNameAndCompany" resultMap="pdaUserResult">
+        SELECT
+        <include refid="pdaUserColumns"/>
+        FROM bs_pda_user a
+        <include refid="pdaUserJoins"/>
+        WHERE a.del_flag = #{delFlag}
+        <if test="loginName != null and loginName != ''">
+            AND a.login_name = #{loginName}
+        </if>
+        <if test="company != null and company.id != null and company.id != ''">
+            AND a.company_id = #{company.id}
+        </if>
+    </select>
+
+    <select id="findList" resultMap="pdaUserResult">
+        SELECT
+        <include refid="pdaUserColumns"/>
+        FROM bs_pda_user a
+        <include refid="pdaUserJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="no != null and no != ''">
+                AND LOWER (a.no) LIKE
+                <if test="dbName == 'oracle'">#{no}||'%'</if>
+                <if test="dbName == 'mssql'">#{no}+'%'</if>
+                <if test="dbName == 'mysql'">concat(LOWER (#{no}),'%')</if>
+            </if>
+            <if test="name != null and name != ''">
+                AND LOWER (a.name) LIKE
+                <if test="dbName == 'oracle'">#{name}||'%'</if>
+                <if test="dbName == 'mssql'">#{name}+'%'</if>
+                <if test="dbName == 'mysql'">concat(LOWER (#{name}),'%')</if>
+            </if>
+            ${sqlMap.dsf}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findPdaByUser" resultMap="pdaUserResult">
+        SELECT
+        <include refid="pdaUserColumns"/>
+        FROM bs_pda_user a
+        <include refid="pdaUserJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL} AND a.login_flag = #{loginFlag}
+            <choose>
+                <when test="dealer != null and dealer.id != null and dealer.id != ''">
+                    AND a.dealer_id = #{dealer.id} AND a.company_id = #{company.id}
+                </when>
+                <otherwise>
+                    AND a.company_id = #{company.id} AND a.dealer_id is null
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <select id="findPdaInfor" resultType="PdaUser">
+        SELECT
+        <include refid="pdaUserColumnsNew"/>
+        FROM bs_pda_user a
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL} AND a.login_flag = #{loginFlag}
+            <choose>
+                <when test="dealer != null and dealer.id != null and dealer.id != ''">
+                    AND a.dealer_id = #{dealer.id} AND a.company_id = #{company.id}
+                </when>
+                <otherwise>
+                    AND a.company_id = #{company.id} AND a.dealer_id is null
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <insert id="insert">
+		INSERT INTO bs_pda_user(
+			id,
+			no,
+			name,
+			mobile,
+			company_id,
+			dealer_id,
+			login_name,
+			login_flag,
+			remarks,
+			password,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{no},
+			#{name},
+			#{mobile},
+			#{company.id},
+			#{dealer.id},
+			#{loginName},
+			#{loginFlag},
+			#{remarks},
+			#{password},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+
+    <update id="update">
+		UPDATE bs_pda_user SET
+			no = #{no},
+			name = #{name},
+			mobile = #{mobile},
+			company_id = #{company.id},
+			dealer_id = #{dealer.id},
+			login_name = #{loginName},
+			login_flag = #{loginFlag},
+			remarks = #{remarks},
+			password = #{password},
+			create_by = #{createBy.id},
+			create_date = #{createDate},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+    <update id="delete">
+		UPDATE bs_pda_user SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+</mapper>

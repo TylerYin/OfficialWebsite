@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.DealerBoundDao">
+
+	<sql id="dealerBoundColumns">
+		a.id AS id,
+		a.status AS status,
+		a.bound_no AS boundNo,
+		a.outDealer_id AS outDealerId,
+		a.remarks AS remarks,
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="dealerBoundColumnsNew">
+		a.id AS id,
+		a.bound_no AS boundNo,
+		a.status AS status,
+		a.outDealer_id AS outDealerId,
+		a.remarks AS remarks,
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.bound_date AS "boundDate",
+		a.receive_date AS "receiveDate",
+		a.ship_no AS "shipNo",
+		a.ship_name AS "shipName",
+		a.del_flag AS "delFlag",
+		dealer_prod_mapping.id AS "pp.id",
+		dealer_prod_mapping.dealer_bound_id AS "pp.dealerBoundId",
+		dealer_prod_mapping.prod_id AS "pp.prodId",
+		dealer_prod_mapping.plan_number AS "pp.planNumber",
+		dealer_prod_mapping.real_number AS "pp.realNumber",
+		dealer_prod_mapping.remarks AS "pp.remark",
+		dealer_prod_mapping.del_flag AS "pp.delFlag",
+		p.id AS "bsProductList.id",
+		p.prod_name AS "bsProductList.prodName",
+		p.pack_rate AS "bsProductList.packRate",
+		pda.id AS "pdaUser.id",
+		pda.name AS "pdaUser.name",
+		outDealer.id AS "out_dealer.id",
+		outDealer.dealer_name AS "out_dealer.name",
+		inDealer.id AS "in_dealer.id",
+		inDealer.dealer_name AS "in_dealer.name"
+	</sql>
+
+    <sql id="boxcode2OutboundMappingColumns">
+        po.box_code,
+        po.box_code_type
+    </sql>
+
+	<sql id="dealerBoundJoins">
+        LEFT JOIN outbound_dealer_product dealer_prod_mapping ON dealer_prod_mapping.dealer_bound_id = a.id
+		LEFT JOIN bs_dealer outDealer ON a.outDealer_id = outDealer.id
+		LEFT JOIN bs_dealer inDealer ON a.inDealer_id = inDealer.id
+  		LEFT JOIN bs_product p ON dealer_prod_mapping.prod_id = p.id
+  		LEFT JOIN bs_pda_user pda ON pda.id = a.pdaUser_id
+		LEFT JOIN sys_office o ON p.company_id=o.id
+	    LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+
+	<resultMap id="dealerBoundResult" type="DealerBound">
+		<id property="id" column="id"/>
+		<result property="boundNo" column="boundNo"/>
+        <result property="status" column="status"/>
+		<result property="remarks" column="remarks"/>
+		<result property="createBy.id" column="createBy.id"/>
+		<result property="createDate" column="createDate"/>
+		<result property="updateBy.id" column="updateBy.id"/>
+		<result property="updateDate" column="updateDate"/>
+        <result property="boundDate" column="boundDate"/>
+        <result property="receiveDate" column="receiveDate"/>
+        <result property="shipNo" column="shipNo"/>
+        <result property="shipName" column="shipName"/>
+		<result property="delFlag" column="delFlag"/>
+        <association property="outDealer" javaType="Dealer">
+            <id property="id" column="out_dealer.id"/>
+            <result property="name" column="out_dealer.name"/>
+        </association>
+        <association property="inDealer" javaType="Dealer">
+            <id property="id" column="in_dealer.id"/>
+            <result property="name" column="in_dealer.name"/>
+        </association>
+        <association property="pdaUser" javaType="PdaUser">
+            <id property="id" column="pdaUser.id"/>
+            <result property="name" column="pdaUser.name"/>
+        </association>
+        <collection property="bsProductList" ofType="BsProduct">
+            <id property="outBound2ProductMappingId" column="pp.id" />
+            <id property="id" column="bsProductList.id" />
+            <id property="prodName" column="bsProductList.prodName" />
+            <id property="packRate" column="bsProductList.packRate" />
+            <id property="remark" column="pp.remark" />
+            <id property="planNumber" column="pp.planNumber" />
+            <id property="realNumber" column="pp.realNumber" />
+        </collection>
+	</resultMap>
+
+    <select id="findQrCodeById" resultType="Qrcode2BoxcodeMapping">
+        SELECT
+            po.box_code AS qrCode,
+            box.box_code AS boxCode,
+            box.bigBox_code AS bigBoxCode
+        FROM
+            outbound_dealer AS o
+            <choose>
+                <when test="prodId != null and prodId != ''">
+                    LEFT JOIN outbound_dealer_product AS op ON o.id = op.dealer_bound_id AND op.prod_id=#{prodId}
+                </when>
+                <otherwise>
+                    LEFT JOIN outbound_dealer_product AS op ON o.id = op.dealer_bound_id
+                </otherwise>
+            </choose>
+            LEFT JOIN outbound_dealer_boxcode AS po ON op.id = po.bound_product_id
+            LEFT JOIN fwm_qrcode AS qrcode ON qrcode.qrCode = po.box_code
+            LEFT JOIN fwm_box_code AS box ON box.id = qrcode.box_code
+        WHERE o.id = #{boundId} AND po.box_code_type = '1'
+        UNION(
+        SELECT
+            fq.qrCode AS qrCode,
+            f.box_code AS boxCode,
+            f.bigBox_code AS bigBoxCode
+        FROM
+           fwm_box_code AS f
+           LEFT JOIN fwm_qrcode AS fq ON fq.box_code = f.id
+        WHERE f.box_code IN
+           (SELECT
+                po.box_code
+            FROM
+                outbound_dealer AS o
+                <choose>
+                    <when test="prodId != null and prodId != ''">
+                        LEFT JOIN outbound_dealer_product AS op ON o.id = op.dealer_bound_id AND op.prod_id=#{prodId}
+                    </when>
+                    <otherwise>
+                        LEFT JOIN outbound_dealer_product AS op ON o.id = op.dealer_bound_id
+                    </otherwise>
+                </choose>
+                LEFT JOIN outbound_dealer_boxcode AS po ON op.id = po.bound_product_id
+            WHERE o.id = #{boundId} AND po.box_code_type = '2'))
+        UNION(
+        SELECT
+            fq.qrCode AS qrCode,
+            f.box_code AS boxCode,
+            f.bigBox_code AS bigBoxCode
+        FROM
+            fwm_box_code AS f
+            LEFT JOIN fwm_qrcode AS fq ON fq.box_code = f.id
+        WHERE f.bigBox_code IN
+            (SELECT
+                 po.box_code
+             FROM
+                outbound_dealer AS o
+                <choose>
+                    <when test="prodId != null and prodId != ''">
+                        LEFT JOIN outbound_dealer_product AS op ON o.id = op.dealer_bound_id AND op.prod_id=#{prodId}
+                    </when>
+                    <otherwise>
+                        LEFT JOIN outbound_dealer_product AS op ON o.id = op.dealer_bound_id
+                    </otherwise>
+                </choose>
+                LEFT JOIN outbound_dealer_boxcode AS po ON op.id = po.bound_product_id
+             WHERE o.id = #{boundId} AND po.box_code_type = '3'))
+    </select>
+
+	<select id="get" resultMap="dealerBoundResult">
+		SELECT
+		<include refid="dealerBoundColumnsNew"/>
+		FROM outbound_dealer a
+		<include refid="dealerBoundJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findList" resultMap="dealerBoundResult">
+		SELECT
+		<include refid="dealerBoundColumnsNew"/>
+		FROM outbound_dealer a
+		<include refid="dealerBoundJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL} AND dealer_prod_mapping.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.create_date BETWEEN #{beginDate} AND #{endDate}
+            <if test="boundNo != null and boundNo != ''">
+                AND LOWER (a.bound_no) LIKE
+                <if test="dbName == 'oracle'">#{boundNo}||'%'</if>
+                <if test="dbName == 'mssql'">#{boundNo}+'%'</if>
+                <if test="dbName == 'mysql'">concat(LOWER (#{boundNo}),'%')</if>
+            </if>
+            <if test="dealer != null and dealer.id != null and dealer.id != ''">
+                AND outDealer.id = #{dealer.id}
+            </if>
+            <if test="bsProduct != null and bsProduct.id != null and bsProduct.id != ''">
+                AND p.id = #{bsProduct.id}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+            ${sqlMap.dsf}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+	</select>
+
+    <select id="findDealerBoundsForPDA" resultMap="dealerBoundResult">
+        SELECT
+        <include refid="dealerBoundColumnsNew"/>
+        FROM outbound_dealer a
+        <include refid="dealerBoundJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL} AND dealer_prod_mapping.del_flag = #{DEL_FLAG_NORMAL}
+            AND inDealer.id = #{inDealer.id} AND a.status = #{status} AND a.pdaUser_id = #{pdaUser.id}
+        </where>
+    </select>
+
+    <sql id="inBoundColumns">
+        a.id AS id,
+        a.outBound_no AS boundNo,
+        a.create_date AS createDate,
+        a.bound_date AS boundDate,
+        a.receive_date AS receiveDate,
+        a.ship_no AS shipNo,
+        a.ship_name AS shipName,
+        a.status AS status,
+        outbound_prod_mapping.id AS bound2ProductId,
+        outbound_prod_mapping.real_number AS boundRealNumber,
+        p.id AS "bsProduct.id",
+        p.prod_name AS "bsProduct.prodName",
+        p.pack_rate AS "bsProduct.packRate",
+        pda.id AS "pdaUser.id",
+        pda.name AS "pdaUser.name",
+        o.name AS shipper
+    </sql>
+
+    <sql id="inBoundJoins">
+        LEFT JOIN outbound_product outbound_prod_mapping ON outbound_prod_mapping.outBound_id = a.id
+        LEFT JOIN bs_dealer d ON a.dealer_id = d.id
+        LEFT JOIN bs_product p ON outbound_prod_mapping.prod_id = p.id
+        LEFT JOIN bs_pda_user pda ON pda.id = a.pdaUser_id
+        LEFT JOIN sys_office o ON p.company_id = o.id
+        LEFT JOIN sys_user u ON u.id = a.create_by
+    </sql>
+
+    <sql id="dealerInBoundColumns">
+        a.id AS id,
+        a.bound_no AS boundNo,
+        a.create_date AS createDate,
+        a.bound_date AS boundDate,
+        a.receive_date AS receiveDate,
+        a.ship_no AS shipNo,
+        a.ship_name AS shipName,
+        a.status AS status,
+        dealer_prod_mapping.id AS bound2ProductId,
+        dealer_prod_mapping.real_number AS boundRealNumber,
+        p.id AS "bsProduct.id",
+        p.prod_name AS "bsProduct.prodName",
+        p.pack_rate AS "bsProduct.packRate",
+        pda.id AS "pdaUser.id",
+        pda.name AS "pdaUser.name",
+        u.name AS shipper
+    </sql>
+
+    <sql id="dealerInBoundJoins">
+        LEFT JOIN outbound_dealer_product dealer_prod_mapping ON dealer_prod_mapping.dealer_bound_id = a.id
+        LEFT JOIN bs_dealer outDealer ON a.outDealer_id = outDealer.id
+        LEFT JOIN bs_product p ON dealer_prod_mapping.prod_id = p.id
+        LEFT JOIN bs_pda_user pda ON pda.id = a.pdaUser_id
+        LEFT JOIN sys_office o ON outDealer.company_id = o.id
+        LEFT JOIN sys_user u ON u.id = a.create_by
+    </sql>
+
+    <resultMap id="inBoundResult" type="DealerInBound">
+        <id property="id" column="id"/>
+        <result property="boundNo" column="boundNo"/>
+        <result property="shipper" column="shipper"/>
+        <result property="shipNo" column="shipNo"/>
+        <result property="shipName" column="shipName"/>
+        <result property="createDate" column="createDate"/>
+        <result property="boundDate" column="boundDate"/>
+        <result property="receiveDate" column="receiveDate"/>
+        <result property="status" column="status"/>
+        <association property="pdaUser" javaType="PdaUser">
+            <id property="id" column="pdaUser.id"/>
+            <result property="name" column="pdaUser.name"/>
+        </association>
+        <collection property="bsProductList" ofType="BsProduct">
+            <id property="id" column="bsProduct.id"/>
+            <id property="prodName" column="bsProduct.prodName"/>
+            <id property="packRate" column="bsProduct.packRate"/>
+            <id property="realNumber" column="boundRealNumber"/>
+            <id property="inBound2ProductMappingId" column="bound2ProductId"/>
+        </collection>
+    </resultMap>
+
+    <select id="findInBoundList" resultMap="inBoundResult">
+        (SELECT
+        <include refid="inBoundColumns"/>
+        FROM
+        outBound a
+        <include refid="inBoundJoins"/>
+        WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+        <choose>
+            <when test="dealer != null and dealer.id != null and dealer.id != ''">
+                AND d.id = #{dealer.id}
+            </when>
+            <otherwise>
+                <if test="dealer != null and dealer.company != null and dealer.company.id != null and dealer.company.id != ''">
+                    AND d.id IN (select dealer.id from bs_dealer dealer where dealer.company_id = #{dealer.company.id})
+                </if>
+            </otherwise>
+        </choose>
+        AND a.status = #{status} AND a.create_date BETWEEN #{beginDate} AND #{endDate}
+        <if test="boundNo != null and boundNo != ''">
+            AND a.outBound_no = #{boundNo}
+        </if>
+        <if test="bsProduct != null and bsProduct.id != null and bsProduct.id != ''">
+            AND p.id = #{bsProduct.id}
+        </if>)
+        UNION
+        (SELECT
+        <include refid="dealerInBoundColumns"/>
+        FROM
+        outbound_dealer a
+        <include refid="dealerInBoundJoins"/>
+        WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+        <if test="dealer != null and dealer.id != null and dealer.id != ''">
+            AND a.outDealer_id = #{dealer.id}
+        </if>
+        <if test="dealer != null and dealer.company != null and dealer.company.id != null and dealer.company.id != ''">
+            AND outDealer.id IN (select dealer.id from bs_dealer dealer where dealer.company_id = #{dealer.company.id})
+        </if>
+        AND a.status = #{status} AND a.create_date BETWEEN #{beginDate} AND #{endDate}
+        <if test="boundNo != null and boundNo != ''">
+            AND a.bound_no = #{boundNo}
+        </if>
+        <if test="bsProduct != null and bsProduct.id != null and bsProduct.id != ''">
+            AND p.id = #{bsProduct.id}
+        </if>)
+        ORDER BY boundDate DESC
+    </select>
+
+	<insert id="insert">
+		INSERT INTO outbound_dealer(
+		id,
+		bound_no,
+		inDealer_id,
+		outDealer_id,
+		status,
+		pdaUser_id,
+		remarks,
+		create_by,
+		create_date,
+		update_by,
+		update_date,
+		del_flag
+		) VALUES (
+		#{id},
+		#{boundNo},
+		#{inDealer.id},
+		#{outDealer.id},
+		#{status},
+		#{pdaUser.id},
+		#{remarks},
+		#{createBy.id},
+		#{createDate},
+		#{updateBy.id},
+		#{updateDate},
+		#{delFlag}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE outbound_dealer SET
+		bound_no = #{boundNo},
+		outDealer_id = #{outDealer.id},
+		pdaUser_id = #{pdaUser.id},
+		remarks = #{remarks}
+		update_by = #{updateBy.id},
+		update_date = #{updateDate},
+		WHERE id = #{id}
+	</update>
+
+    <update id="updateStatus">
+        UPDATE outbound_dealer SET status = #{status}
+        <if test="boundDate != null and boundDate != ''">
+            , bound_date = #{boundDate}
+        </if>
+        <if test="receiveDate != null and receiveDate != ''">
+            , receive_date = #{receiveDate}
+        </if>
+        <if test="shipNo != null and shipNo != ''">
+            , ship_no = #{shipNo}
+        </if>
+        <if test="shipName != null and shipName != ''">
+            , ship_name = #{shipName}
+        </if>
+        WHERE id = #{id}
+    </update>
+
+	<update id="delete">
+		UPDATE outbound_dealer SET
+		del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+</mapper>

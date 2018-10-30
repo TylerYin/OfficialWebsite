@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.DealerDao">
+
+	<sql id="dealerColumns">
+		d.id,
+		d.dealer_no AS dealerNo,
+		d.dealer_name AS name,
+		d.address,
+		d.phone,
+		d.email,
+		d.fax,
+		d.grade,
+		d.qq,
+		d.wechat,
+		d.certificateUrl,
+		d.account,
+		d.password,
+		d.dealer_info AS dealerInfo,
+		d.longitude,
+		d.latitude,
+		d.dealer_jianma AS dealerJianMa,
+		d.remark,
+		d.create_by AS "createBy.id",
+		d.create_date AS "createDate",
+		d.update_by AS "updateBy.id",
+		d.update_date AS "updateDate",
+		d.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="dealerColumnsNew">
+		d.id,
+		d.dealer_no AS dealerNo,
+		d.dealer_name AS name,
+		d.parent_ids AS parentIds,
+		d.address,
+		d.phone,
+		d.email,
+		d.fax,
+		d.grade,
+		d.qq,
+		d.wechat,
+		d.certificateUrl,
+		d.account,
+		d.password,
+		d.dealer_info AS dealerInfo,
+		d.longitude,
+		d.latitude,
+		d.dealer_jianma AS dealerJianMa,
+		d.remark,
+		p.id AS "parentDealer.id",
+		p.dealer_no AS "parentDealer.no",
+		p.dealer_name AS "parentDealer.name",
+		p.parent_ids AS "parentDealer.parentIds",
+		p.del_flag AS "parentDealer.delFlag",
+		a.id AS "area.id",
+		a.name AS "area.name",
+		o.id AS "company.id",
+		o.name AS "company.name",
+		d.create_by AS "createBy.id",
+		d.create_date AS "createDate",
+		d.update_by AS "updateBy.id",
+		d.update_date AS "updateDate",
+		d.del_flag AS "delFlag"
+	</sql>
+
+    <sql id="dealerColumnsForSaleArea">
+        d.id,
+        d.dealer_no AS dealerNo,
+        d.dealer_name AS name,
+        d.parent_ids AS parentIds,
+        d.address,
+        d.phone,
+        d.email,
+        d.fax,
+        d.grade,
+        d.qq,
+        d.wechat,
+        d.certificateUrl,
+        d.account,
+        d.password,
+        d.dealer_info AS dealerInfo,
+        d.longitude,
+        d.latitude,
+        d.dealer_jianma AS dealerJianMa,
+        d.remark,
+        p.id AS "parentDealer.id",
+        p.dealer_no AS "parentDealer.no",
+        p.dealer_name AS "parentDealer.name",
+        p.parent_ids AS "parentDealer.parentIds",
+        p.del_flag AS "parentDealer.delFlag",
+        a.id AS "area.id",
+        a.name AS "area.name",
+        o.id AS "company.id",
+        o.name AS "company.name",
+        d.create_by AS "createBy.id",
+        d.create_date AS "createDate",
+        d.update_by AS "updateBy.id",
+        d.update_date AS "updateDate",
+        da.area_id AS "areaList.id",
+        d.del_flag AS "delFlag"
+    </sql>
+
+	<sql id="treeMenuDataColumns">
+		d.id,
+		d.dealer_name AS name,
+		p.id AS "parentDealer.id",
+		p.dealer_name AS "parentDealer.name"
+	</sql>
+
+	<sql id="childrenDealerDataColumns">
+		d.id,
+		d.dealer_name AS name,
+		c.id AS "childrenDealer.id",
+		c.dealer_name AS "childrenDealer.name"
+	</sql>
+	
+	<sql id="dealerJoins">
+	LEFT JOIN bs_dealer AS p ON d.parent_id = p.id
+  	LEFT JOIN sys_office o ON d.company_id=o.id
+	LEFT JOIN sys_user u ON u.id = d.create_by
+  	LEFT JOIN sys_area AS a ON d.sales_area_id = a.id
+    </sql>
+
+    <sql id="dealerJoinsForSaleArea">
+    LEFT JOIN bs_dealer AS p ON d.parent_id = p.id
+    LEFT JOIN bs_dealer_area da ON da.dealer_id = d.id
+    LEFT JOIN sys_office o ON d.company_id=o.id
+    LEFT JOIN sys_user u ON u.id = d.create_by
+    LEFT JOIN sys_area AS a ON d.sales_area_id = a.id
+    </sql>
+
+    <sql id="treeMenuDataJoins">
+        LEFT JOIN bs_dealer AS p ON d.parent_id = p.id
+        LEFT JOIN sys_office o ON d.company_id=o.id
+        LEFT JOIN sys_user u ON u.id = d.create_by
+    </sql>
+
+	<resultMap id="dealerResult" type="Dealer">
+		<id property="id" column="id"/>
+		<result property="dealerNo" column="dealerNo"/>
+		<result property="name" column="name"/>
+        <result property="parentIds" column="parentIds"/>
+		<result property="address" column="address"/>
+		<result property="phone" column="phone"/>
+		<result property="email" column="email"/>
+		<result property="fax" column="fax"/>
+		<result property="grade" column="grade"/>
+		<result property="qq" column="qq"/>
+		<result property="wechat" column="wechat"/>
+		<result property="certificateUrl" column="certificateUrl"/>
+		<result property="account" column="account"/>
+		<result property="password" column="password"/>
+		<result property="dealerInfo" column="dealerInfo"/>
+		<result property="longitude" column="longitude"/>
+		<result property="latitude" column="latitude"/>
+		<result property="dealerJianMa" column="dealerJianMa"/>
+		<result property="remark" column="remark"/>
+		<result property="createBy.id" column="createBy.id"/>
+		<result property="createDate" column="createDate"/>
+		<result property="updateBy.id" column="updateBy.id"/>
+		<result property="updateDate" column="updateDate"/>
+		<result property="delFlag" column="delFlag"/>
+
+		<association property="parentDealer" javaType="Dealer">
+			<id property="id" column="parentDealer.id"/>
+			<result property="dealerNo" column="parentDealer.no"/>
+			<result property="name" column="parentDealer.name"/>
+			<result property="parentIds" column="parentDealer.parentIds"/>
+			<result property="delFlag" column="parentDealer.delFlag"/>
+		</association>
+		<association property="company" javaType="Office">
+			<id property="id" column="company.id"/>
+			<result property="name" column="company.name"/>
+		</association>
+		<association property="salesArea" javaType="Area">
+			<id property="id" column="area.id"/>
+			<result property="name" column="area.name"/>
+		</association>
+	</resultMap>
+
+    <resultMap id="dealerResultForSaleArea" type="Dealer">
+        <id property="id" column="id"/>
+        <result property="dealerNo" column="dealerNo"/>
+        <result property="name" column="name"/>
+        <result property="parentIds" column="parentIds"/>
+        <result property="address" column="address"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="fax" column="fax"/>
+        <result property="grade" column="grade"/>
+        <result property="qq" column="qq"/>
+        <result property="wechat" column="wechat"/>
+        <result property="certificateUrl" column="certificateUrl"/>
+        <result property="account" column="account"/>
+        <result property="password" column="password"/>
+        <result property="dealerInfo" column="dealerInfo"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+        <result property="dealerJianMa" column="dealerJianMa"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy.id" column="createBy.id"/>
+        <result property="createDate" column="createDate"/>
+        <result property="updateBy.id" column="updateBy.id"/>
+        <result property="updateDate" column="updateDate"/>
+        <result property="delFlag" column="delFlag"/>
+
+        <association property="parentDealer" javaType="Dealer">
+            <id property="id" column="parentDealer.id"/>
+            <result property="dealerNo" column="parentDealer.no"/>
+            <result property="name" column="parentDealer.name"/>
+            <result property="parentIds" column="parentDealer.parentIds"/>
+            <result property="delFlag" column="parentDealer.delFlag"/>
+        </association>
+        <association property="company" javaType="Office">
+            <id property="id" column="company.id"/>
+            <result property="name" column="company.name"/>
+        </association>
+        <association property="salesArea" javaType="Area">
+            <id property="id" column="area.id"/>
+            <result property="name" column="area.name"/>
+        </association>
+        <collection property="areaList" ofType="Area">
+            <id property="id" column="areaList.id" />
+        </collection>
+    </resultMap>
+
+	<resultMap id="treeMenuDataResult" type="Dealer">
+		<id property="id" column="id"/>
+		<result property="name" column="name"/>
+		<association property="parentDealer" javaType="Dealer">
+			<id property="id" column="parentDealer.id"/>
+			<result property="name" column="parentDealer.name"/>
+		</association>
+	</resultMap>
+
+	<resultMap id="childrenDealerResult" type="Dealer">
+		<id property="id" column="id"/>
+		<result property="name" column="name"/>
+		<association property="childrenDealer" javaType="Dealer">
+			<id property="id" column="childrenDealer.id"/>
+			<result property="name" column="childrenDealer.name"/>
+		</association>
+	</resultMap>
+    
+	<select id="get" resultMap="dealerResultForSaleArea">
+		SELECT
+        <include refid="dealerColumnsForSaleArea"/>
+		FROM bs_dealer d
+		<include refid="dealerJoinsForSaleArea"/>
+		WHERE d.id = #{id}
+	</select>
+
+    <select id="findByAccountAndCompany" resultType="Dealer">
+        SELECT
+        <include refid="dealerColumns"/>
+        FROM bs_dealer d
+        WHERE d.del_flag = #{delFlag}
+        <if test="account != null and account != ''">
+            AND d.account = #{account}
+        </if>
+        <if test="company != null and company.id != null and company.id != ''">
+            AND d.company_id = #{company.id}
+        </if>
+    </select>
+	
+	<select id="findList" resultMap="dealerResult">
+		SELECT
+			<include refid="dealerColumnsNew"/>
+		FROM bs_dealer d
+		<include refid="dealerJoins"/>
+		WHERE d.del_flag = #{delFlag}
+
+		<if test="name != null and name != ''">
+			AND d.dealer_name LIKE concat(#{name},'%')
+		</if>
+		<if test="phone != null and phone != ''">
+			AND d.phone LIKE concat(#{phone},'%')
+		</if>
+		<if test="salesArea != null and salesArea.id != null and salesArea.id != ''">
+			AND (a.id = #{salesArea.id} OR a.id IN (SELECT id FROM sys_area WHERE parent_ids LIKE concat('%,',#{salesArea.id},'%')))
+		</if>
+		<if test="company != null and company.name != null and company.name != ''">
+			AND o.name LIKE concat(#{company.name},'%')
+		</if>
+		${sqlMap.dsf}
+		ORDER BY d.update_date DESC
+	</select>
+
+    <select id="findListForDealerRole" resultMap="dealerResult">
+        SELECT
+        <include refid="dealerColumnsNew"/>
+        FROM bs_dealer d
+        <include refid="dealerJoins"/>
+        WHERE d.del_flag = #{delFlag} AND d.parent_ids LIKE concat('%', #{parentIds},'%')
+
+        <if test="name != null and name != ''">
+            AND d.dealer_name LIKE concat(#{name},'%')
+        </if>
+        <if test="phone != null and phone != ''">
+            AND d.phone LIKE concat(#{phone},'%')
+        </if>
+        <if test="salesArea != null and salesArea.id != null and salesArea.id != ''">
+            AND (a.id = #{salesArea.id} OR a.id IN (SELECT id FROM sys_area WHERE parent_ids LIKE concat('%,',#{salesArea.id},'%')))
+        </if>
+        <if test="company != null and company.name != null and company.name != ''">
+            AND o.name LIKE concat(#{company.name},'%')
+        </if>
+        ORDER BY d.update_date DESC
+    </select>
+
+	<!-- 根据用户选择的不同级别生成不同的树型结构 -->
+	<select id="findTreeMenuDataListByLevel" resultMap="treeMenuDataResult">
+        SELECT
+        <include refid="treeMenuDataColumns"/>
+        FROM bs_dealer d
+        <include refid="treeMenuDataJoins"/>
+        WHERE d.del_flag = #{delFlag}
+        <if test="grade != null and grade != ''">
+            AND d.grade &lt; #{grade}
+        </if>
+        <if test="company != null and company != ''">
+            AND d.company_id = #{company.id}
+        </if>
+        ORDER BY d.update_date DESC
+	</select>
+
+	<!-- 查询指定经销商节点的子节点 -->
+	<select id="findChildrenDealer" parameterType="map" resultMap="childrenDealerResult">
+		SELECT
+		<include refid="childrenDealerDataColumns"/>
+		FROM bs_dealer d LEFT JOIN bs_dealer AS c ON d.id = c.parent_id
+		WHERE d.del_flag = #{delFlag}
+		<if test="dealerId != null and dealerId != ''">
+			AND d.id = #{dealerId}
+		</if>
+		<if test="company != null and company != ''">
+			AND d.company_id = #{company}
+		</if>
+		ORDER BY d.update_date DESC
+	</select>
+
+    <!-- 获取树型结构 -->
+    <select id="findTreeMenuDataList" parameterType="map" resultMap="treeMenuDataResult">
+        SELECT
+        <include refid="treeMenuDataColumns"/>
+        FROM bs_dealer d
+        <include refid="treeMenuDataJoins"/>
+        WHERE d.del_flag = #{delFlag}
+        ORDER BY d.update_date DESC
+    </select>
+
+	<insert id="insert">
+		INSERT INTO bs_dealer(
+			id,
+			dealer_no,
+			dealer_name,
+			parent_id,
+			parent_ids,
+			address,
+			phone,
+			email,
+			fax,
+			company_id,
+			sales_area_id,
+			grade,
+			qq,
+			wechat,
+			certificateUrl,
+			account,
+			password,
+			dealer_info,
+			longitude,
+			latitude,
+			dealer_jianma,
+			remark,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{dealerNo},
+			#{name},
+			#{parentDealer.id},
+			#{parentIds},
+			#{address},
+			#{phone},
+			#{email},
+			#{fax},
+			#{company.id},
+			#{salesArea.id},
+			#{grade},
+			#{qq},
+			#{wechat},
+			#{certificateUrl},
+			#{account},
+			#{password},
+			#{dealerInfo},
+			#{longitude},
+			#{latitude},
+			#{dealerJianMa},
+			#{remark},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE bs_dealer SET
+			dealer_name = #{name},
+			parent_id = #{parentDealer.id},
+			parent_ids = #{parentIds},
+			address = #{address},
+			phone = #{phone},
+			email = #{email},
+			fax = #{fax},
+			company_id = #{company.id},
+			sales_area_id = #{salesArea.id},
+			grade = #{grade},
+			qq = #{qq},
+			wechat = #{wechat},
+			certificateUrl = #{certificateUrl},
+			account = #{account},
+			password = #{password},
+			dealer_info = #{dealerInfo},
+			longitude = #{longitude},
+			latitude = #{latitude},
+			dealer_jianma = #{dealerJianMa},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remark = #{remark}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE bs_dealer SET
+		del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findDealerByQrcode" resultType="Dealer">
+        SELECT id, name, latitude, longitude, companyId AS "company.id" FROM
+        ((SELECT d.id AS id, d.dealer_name AS name, d.latitude AS latitude, d.longitude AS longitude, d.company_id AS companyId, odb.scan_date AS scanDate
+        FROM fwm_qrcode AS q
+        LEFT JOIN fwm_box_code AS box ON box.box_code = q.box_code
+        LEFT JOIN outbound_dealer_boxcode AS odb ON (odb.box_code = q.qrCode OR odb.box_code = box.box_code OR odb.box_code = box.bigBox_code)
+        LEFT JOIN outbound_dealer_product AS odp ON odp.id = odb.bound_product_id
+        LEFT JOIN outbound_dealer AS od ON od.id = odp.dealer_bound_id
+        LEFT JOIN bs_dealer AS d ON d.id = od.outDealer_id
+        WHERE q.del_flag = #{delFlag} AND odp.del_flag = #{delFlag} AND od.del_flag = #{delFlag} AND odb.del_flag = #{delFlag} AND q.qrCode = #{qrCode}
+        ORDER BY odb.scan_date DESC)
+        UNION
+        (SELECT d.id AS id, d.dealer_name AS name, d.latitude AS latitude, d.longitude AS longitude, d.company_id AS companyId, ob.scan_date AS scanDate
+        FROM fwm_qrcode AS q
+        LEFT JOIN fwm_box_code AS box ON box.box_code = q.box_code
+        LEFT JOIN outbound_boxcode AS ob ON (ob.box_code = q.qrCode OR ob.box_code = box.box_code OR ob.box_code = box.bigBox_code)
+        LEFT JOIN outbound_product AS op ON op.id = ob.outBound_product_id
+        LEFT JOIN outbound AS o ON o.id = op.outbound_id
+        LEFT JOIN bs_dealer AS d ON d.id = o.dealer_id
+        WHERE q.del_flag = #{delFlag} AND op.del_flag = #{delFlag} AND o.del_flag = #{delFlag} AND ob.del_flag = #{delFlag} AND q.qrCode = #{qrCode}
+        ORDER BY ob.scan_date DESC)) temp ORDER BY scanDate DESC
+    </select>
+
+    <select id="findAreaByDealer" resultType="Area">
+        SELECT a.id AS id, a.parent_ids AS parentIds, a.type AS type, a.name AS name
+        FROM bs_dealer_area AS d LEFT JOIN sys_area AS a ON a.id = d.area_id
+        WHERE dealer_id = #{id}
+    </select>
+
+    <insert id="insertDealerArea">
+        INSERT INTO bs_dealer_area(dealer_id, area_id)
+        <foreach collection="areaList" item="area" separator=" union all ">
+            SELECT #{id}, #{area.id}
+            <if test="dbName != 'mssql'">
+                FROM dual
+            </if>
+        </foreach>
+    </insert>
+
+    <delete id="deleteDealerArea">
+        DELETE FROM bs_dealer_area WHERE dealer_id = #{id}
+    </delete>
+
+    <delete id="deleteUnusedSaleArea">
+        DELETE FROM bs_dealer_area
+        WHERE dealer_id IN
+        (SELECT id FROM bs_dealer AS d WHERE d.parent_ids LIKE concat('%', #{dealerId}, '%'))
+        AND area_id IN
+        <foreach collection="saleAreas" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+</mapper>

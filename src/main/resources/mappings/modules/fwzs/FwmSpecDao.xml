@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.FwmSpecDao">
+    
+	<sql id="fwmSpecColumns">
+		a.id AS "id",
+		a.spec_code AS "specCode",
+		a.spec_desc AS "specDesc",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="fwmSpecJoins">
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN sys_office o ON u.office_id=o.id
+	</sql>
+	
+	<select id="getRowCountBySpecCode" resultType="java.lang.Integer">
+		SELECT COUNT(f.spec_code) FROM fwm_spec AS f
+		WHERE f.spec_code = #{specCode} AND f.del_flag = #{delFlag} AND f.create_by IN (SELECT id FROM sys_user WHERE company_id = #{companyId})
+	</select>
+    
+	<select id="get" resultType="FwmSpec">
+		SELECT 
+			<include refid="fwmSpecColumns"/>
+		FROM fwm_spec a
+		<include refid="fwmSpecJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="FwmSpec">
+		SELECT 
+			<include refid="fwmSpecColumns"/>
+		FROM fwm_spec a
+		<include refid="fwmSpecJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="specCode != null and specCode != ''">
+				AND LOWER(a.spec_code) LIKE
+					<if test="dbName == 'oracle'">#{specCode}||'%'</if>
+					<if test="dbName == 'mssql'">#{specCode}+'%'</if>
+					<if test="dbName == 'mysql'">concat(LOWER(#{specCode}),'%')</if>
+			</if>
+			<if test="specDesc != null and specDesc != ''">
+				AND LOWER(a.spec_desc) LIKE
+					<if test="dbName == 'oracle'">#{specDesc}||'%'</if>
+					<if test="dbName == 'mssql'">#{specDesc}+'%'</if>
+					<if test="dbName == 'mysql'">concat(LOWER(#{specDesc}),'%')</if>
+			</if>
+			${sqlMap.dsf}
+		</where>
+		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="FwmSpec">
+		SELECT 
+			<include refid="fwmSpecColumns"/>
+		FROM fwm_spec a
+		<include refid="fwmSpecJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO fwm_spec(
+			id,
+			spec_code,
+			spec_desc,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{specCode},
+			#{specDesc},
+			#{status},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE fwm_spec SET 	
+			spec_code = #{specCode},
+			spec_desc = #{specDesc},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE fwm_spec SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

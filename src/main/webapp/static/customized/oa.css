@@ -1,0 +1,34 @@
+/*
+定义OA目录下的公用CSS样式
+*/
+
+.marginTop
+{
+    margin-top:8px;
+}
+
+.width
+{
+    width:163px;
+}
+
+.divPadding
+{
+    padding:10px;
+}
+
+.hrBackReason, .leaderBackReason
+{
+    width: 250px;
+    height: 60px;
+}
+
+.form
+{
+    width:500px;
+}
+
+
+
+
+
