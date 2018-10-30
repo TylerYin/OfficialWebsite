@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.SCPlan2BSProductMappingDao">
+    
+	<sql id="scPlan2BSProductMappingColumns">
+		a.id AS "id",
+		a.plan_id AS "planId",
+		a.prod_id AS "prodId",
+		a.batch_no AS "batchNo",
+		a.indate AS "indate",
+		a.check_plan_url AS "checkPlanUrl",
+		a.fwmfile_id AS "fwmfileId",
+		a.plan_number AS "planNumber",
+		a.real_number AS "realNumber",
+		a.warehouse_id AS "warehouse.id",
+		a.remark AS "remark",
+		a.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="scPlan2BSProductJoins">
+	</sql>
+
+	<select id="get" resultType="SCPlan2BSProductMapping">
+		SELECT 
+			<include refid="scPlan2BSProductMappingColumns"/>
+		FROM sc_plan_product a
+			<include refid="scPlan2BSProductJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SCPlan2BSProductMapping">
+		SELECT 
+			<include refid="scPlan2BSProductMappingColumns"/>
+		FROM sc_plan_product a
+		<include refid="scPlan2BSProductJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="prodId != null and prodId != ''">
+				AND a.prod_id = #{prodId}
+			</if>
+			<if test="planId != null and planId != ''">
+				AND a.plan_id = #{planId}
+			</if>
+			<if test="batchNo != null and batchNo != ''">
+				AND a.batch_no = #{batchNo}
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sc_plan_product(
+			id,
+			plan_id,
+			prod_id,
+			batch_no,
+			indate,
+			check_plan_url,
+			plan_number,
+			real_number,
+			warehouse_id,
+			remark,
+			del_flag
+		) VALUES (
+			#{id},
+			#{planId},
+			#{prodId},
+			#{batchNo},
+			#{indate},
+			#{checkPlanUrl},
+			#{planNumber},
+			#{realNumber},
+			#{warehouse.id},
+			#{remark},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sc_plan_product SET
+			plan_id = #{planId},
+			prod_id = #{prodId},
+			batch_no = #{batchNo},
+			indate = #{indate},
+			check_plan_url = #{checkPlanUrl},
+			fwmfile_id = #{fwmFileId},
+			plan_number = #{planNumber},
+			real_number = #{realNumber},
+			warehouse_id = #{warehouse.id},
+			del_flag = #{delFlag},
+			remark = #{remark}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sc_plan_product SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+</mapper>

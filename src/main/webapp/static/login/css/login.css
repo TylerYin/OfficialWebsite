@@ -1,0 +1,47 @@
+@charset "utf-8";
+/* CSS Document */
+div,span,p,ul,li,body,html,table,tr,td,tbody,th,h1,h2,h3,h4,h5,h6,text,input{ margin:0px; padding:0px;}
+ul,li{ list-style:none;}
+html,body,footer{  font:1em/1.7em "微软雅黑",Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif; color:#333;  }
+html,body{background-image: -webkit-linear-gradient(to top, #eef1f5 0%, #e6e9f0 100%);
+
+width:100%; height:100%; overflow:hidden;
+
+ filter:alpha(opacity=100 finishopacity=50 style=1 startx=0,starty=0,finishx=0,finishy=150) progid:DXImageTransform.Microsoft.gradient(startcolorstr=#eef1f5,endcolorstr=#e6e9f0,gradientType=0);
+    -ms-filter:alpha(opacity=100 finishopacity=50 style=1 startx=0,starty=0,finishx=0,finishy=150) progid:DXImageTransform.Microsoft.gradient(startcolorstr=#eef1f5,endcolorstr=#e6e9f0,gradientType=0);/*IE8*/	
+    background:red; /* 一些不支持背景渐变的浏览器 */  
+    background:-moz-linear-gradient(top, #eef1f5, #e6e9f0);  
+    background:-webkit-gradient(linear, 0 0, 0 bottom, from(#eef1f5), to(#e6e9f0));  
+    background:-o-linear-gradient(top, #eef1f5, #e6e9f0);
+	background-repeat:no-repeat; 
+}
+
+#container{width:960px;height:490px; margin:0px auto; margin-top:10%; background:#fff; border-radius:4px; box-shadow:2px 5px 20px 5px rgba(0,0,0,0.17); margin-bottom:40px;}
+#footer{ height:113px; width:100%;  text-align:center;line-height:113px; vertical-align:middle;}
+.asideL{widht:381px; height:490px; border-radius:4px 0px 0px 4px; float:left;}
+.asideR{width:543px; height:454px; padding:18px; float:left;}
+.signlink{height:62px; clear:both; float:right;}
+.signlink a{width:48px; height:20px; font-size:14px; text-align:center; border:1px solid #1e9ce5; padding:1px 6px; color:#939191; text-decoration:none; border-radius:2px;}
+.main{ clear:both;}
+.formtitle{ padding-left:102px;}
+.formbox{ padding-top:0px;}
+.formbox ul{}
+.formbox ul li{ height:auto;}
+.formbox label{ font-size:16px; font-weight:bold; color:#333; text-align:right; width:52px; display:inline-block;}
+.formbox span.error{ font-size:15px; font-weight:bold; color:red; text-align:left; width:98px; display:inline-block;}
+.formbox span.codeerror{ margin-left:10px; font-size:15px; font-weight:bold; color:red; text-align:left; width:140px; display:inline-block;}
+.inputText{width:298px; height:41px; padding:0px; border:1px solid #b5b5b5; border-radius:2px; line-height:41px; vertical-align:middle; color:#333; margin:10px 8px 10px 13px;}
+.inputText1{width:100px}
+.formbox ul li img{ vertical-align:middle;  font-size:0px; display:inline-block;}
+.formbox span{ color:#999999; font-size:14px;}
+.formbox .checkb{ margin-left:13px;vertical-align:middle;}
+.formbox em{font-size:14px; color:#525252; font-style:normal; vertical-align:middle;  }
+.formbox a{font-size:14px; color:#525252; text-decoration:underline;}
+.formbox a:hover{color:blue;}
+.formbox a.a1{  margin-left:20px; margin-right:8px;}
+.formbox .subbtton{ height:42px; width:300px; color:#fff; font-size:20px; font-weight:bold; text-align:center; line-height:42px; vertical-align:middle; border-radius:2px; border:none; margin-left:61px; background:-moz-linear-gradient(top, #1ea6e5, #1e92e5);  
+    background:-webkit-gradient(linear, 0 0, 0 bottom, from(#1ea6e5), to(#1e92e5));  
+    background:-o-linear-gradient(top, #1ea6e5, #1e92e5);}
+.li22{ height:73px; margin:20px; color:#F96}
+.li3, .li33{ margin:15px 0px;}
+

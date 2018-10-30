@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.api.dao.FwmQrcodeApiDao">
+
+	<update id="updateByBatch">
+		<foreach collection="fwmQrcodeVos" item="item" index="index"
+			separator=";">
+			UPDATE fwm_qrcode
+			<set>
+				plan_id = #{item.scPlan},
+				update_date = #{item.updateDate}
+			</set>
+			WHERE qrcode = #{item.qrcode}
+		</foreach>
+	</update>
+
+</mapper>

@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.BsProductDao">
+    
+	<sql id="bsProductColumns">
+		a.id AS "id",
+		a.prod_no AS "prodNo",
+		a.reg_type AS "regType",
+		a.reg_code AS "regCode",
+		a.pesticide_name AS "pesticideName",
+		a.prod_name AS "prodName",
+		a.reg_crop AS "regCrop",
+		a.company_id AS "company.id",
+		a.prod_spec AS "prodSpec",
+		a.pack_rate AS "packRate",
+		a.sc_type AS "scType",
+		a.prod_unit AS "prodUnit",
+		a.prod_manager AS "prodManager",
+		a.isuser AS "isuser",
+		a.img_url AS "imgUrl",
+		a.remark AS "remark",
+		a.prod_type AS "prodType",
+		a.prod_content AS "prodContent",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	<sql id="bsProductColumnsNew">
+		a.id AS "id",
+		a.prod_no AS "prodNo",
+		a.reg_type AS "regType",
+		a.reg_code AS "regCode",
+		a.pesticide_name AS "pesticideName",
+		a.prod_name AS "prodName",
+		a.reg_crop AS "regCrop",
+		a.company_id AS "company.id",
+		a.prod_spec AS "prodSpec.id",
+		a.pack_rate AS "packRate",
+		a.sc_type AS "scType",
+		a.prod_unit AS "prodUnit",
+		a.prod_manager AS "prodManager",
+		a.isuser AS "isuser",
+		a.img_url AS "imgUrl",
+		a.prod_parameter AS "prodParameter",
+		a.prod_feature AS "prodFeature",
+		a.prod_consideration AS "prodConsideration",
+		a.remark AS "remark",
+		a.prod_type AS "prodType",
+		a.prod_content AS "prodContent",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		o.`name` AS "company.name",
+		s.spec_code AS "prodSpec.specCode",
+		s.spec_desc AS "prodSpec.specDesc"
+	</sql>
+	<sql id="bsProductJoins">
+		LEFT JOIN sys_office o ON o.id = a.company_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+		LEFT JOIN fwm_spec s ON a.prod_spec=s.id
+	</sql>
+
+    <select id="duplicateRowId" resultType="java.lang.String">
+        SELECT a.id FROM bs_product a
+        WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+        AND a.reg_code = #{regCode}
+        AND a.prod_name = #{prodName}
+        AND a.company_id = #{company.id}
+        AND a.prod_spec = #{prodSpec.id}
+        AND a.prod_unit = #{prodUnit}
+    </select>
+
+	<select id="get" resultType="BsProduct">
+		SELECT 
+			<include refid="bsProductColumnsNew"/>
+		FROM bs_product a
+		<include refid="bsProductJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="BsProduct">
+		SELECT 
+			<include refid="bsProductColumnsNew"/>
+		FROM bs_product a
+		<include refid="bsProductJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="prodNo != null and prodNo != ''">
+				AND LOWER (a.prod_no) LIKE concat(LOWER(#{prodNo}),'%')
+			</if>
+			<if test="regCode != null and regCode != ''">
+				AND LOWER (a.reg_code) LIKE concat(LOWER(#{regCode}),'%')
+			</if>
+			<if test="regType != null and regType != ''">
+				AND a.reg_type = #{regType}
+			</if>
+			<if test="pesticideName != null and pesticideName != ''">
+				AND LOWER (a.pesticide_name) LIKE concat(LOWER(#{pesticideName}),'%')
+			</if>
+            <if test="prodSpec != null and prodSpec.specCode != null and prodSpec.specCode != ''">
+                AND s.spec_code = #{prodSpec.specCode}
+            </if>
+			<if test="company != null and company.id != null and company.id != ''">
+				AND a.company_id = #{company.id}
+			</if>
+			<if test="scType != null and scType != ''">
+				AND a.sc_type = #{scType}
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.company_id, a.reg_crop, a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="findProducts" resultType="BsProduct">
+        SELECT
+        <include refid="bsProductColumnsNew"/>
+        FROM bs_product a
+        <include refid="bsProductJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <if test="company != null and company.id != null and company.id != ''">
+                AND a.company_id = #{company.id}
+            </if>
+            <if test="prodName != null and prodName != ''">
+                AND a.prod_name LIKE concat('%', #{prodName}, '%')
+            </if>
+            <if test="prodSpec != null and prodSpec != '' and prodSpec.specDesc!= null and prodSpec.specDesc!= '' ">
+                AND s.spec_desc LIKE concat('%', #{prodSpec.specDesc}, '%')
+            </if>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.company_id, a.reg_crop, a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+	<select id="findAllList" resultType="BsProduct">
+		SELECT 
+			<include refid="bsProductColumns"/>
+		FROM bs_product a
+		<include refid="bsProductJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO bs_product(
+			id,
+			prod_no,
+			reg_type,
+			reg_code,
+			pesticide_name,
+			prod_name,
+			reg_crop,
+			company_id,
+			prod_spec,
+			pack_rate,
+			sc_type,
+			prod_unit,
+			prod_manager,
+			isuser,
+			img_url,
+			remark,
+			prod_type,
+			prod_content,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{prodNo},
+			#{regType},
+			#{regCode},
+			#{pesticideName},
+			#{prodName},
+			#{regCrop},
+			#{company.id},
+			#{prodSpec.id},
+			#{packRate},
+			#{scType},
+			#{prodUnit},
+			#{prodManager},
+			#{isuser},
+			#{imgUrl},
+			#{remark},
+			#{prodType},
+			#{prodContent},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE bs_product SET 	
+			prod_no = #{prodNo},
+			reg_type = #{regType},
+			reg_code = #{regCode},
+			pesticide_name = #{pesticideName},
+			prod_name = #{prodName},
+			reg_crop = #{regCrop},
+			company_id = #{company.id},
+			prod_spec = #{prodSpec.id},
+			pack_rate = #{packRate},
+			sc_type = #{scType},
+			prod_unit = #{prodUnit},
+			prod_manager = #{prodManager},
+			isuser = #{isuser},
+			img_url = #{imgUrl},
+			remark = #{remark},
+			prod_type = #{prodType},
+			prod_content = #{prodContent},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+    <update id="updateExtendAttributes">
+        UPDATE bs_product SET
+			prod_parameter = #{prodParameter},
+			prod_feature = #{prodFeature},
+			prod_consideration = #{prodConsideration},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+    </update>
+	
+	<update id="delete">
+		UPDATE bs_product SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+</mapper>

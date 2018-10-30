@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.AntiRegionalDumpingDao">
+    <sql id="antiRegionalDumpingColumns">
+        COUNT(p.prod_no) AS antiCount,
+        p.id AS "bsProduct.id",
+        p.prod_no AS "bsProduct.prodNo",
+        p.prod_name AS "bsProduct.prodName",
+        s.spec_desc AS "bsProduct.prodSpec.specDesc",
+        d.id AS "dealer.id",
+        d.dealer_no AS "dealer.dealerNo",
+        d.dealer_name AS "dealer.name",
+        d.address AS "dealer.address",
+        r.name AS "dealer.salesArea.name",
+        o.name AS "company.name"
+    </sql>
+
+    <sql id="antiRegionalDumpingDetailColumns">
+        a.id AS id,
+        a.qrCode AS qrCode,
+        p.prod_no AS "bsProduct.prodNo",
+        p.prod_name AS "bsProduct.prodName",
+        s.spec_desc AS "bsProduct.prodSpec.specDesc",
+        d.dealer_no AS "dealer.dealerNo",
+        d.dealer_name AS "dealer.name",
+        d.address AS "dealer.address",
+        r.name AS "dealer.salesArea.name",
+        o.name AS "company.name",
+        f.address AS "fwmQueryHistory.address",
+        f.create_date AS createDate,
+        q.select_num AS queryTimes
+    </sql>
+
+    <sql id="antiRegionalDumpingJoins">
+        LEFT JOIN fwm_query_history AS f ON f.id = a.query_history_id
+        LEFT JOIN fwm_qrCode AS q ON a.qrCode = q.qrCode
+        LEFT JOIN bs_product AS p ON p.id = a.prod_id
+        LEFT JOIN fwm_spec AS s on p.prod_spec = s.id
+        LEFT JOIN bs_dealer AS d ON d.id = a.dealer_id
+        LEFT JOIN sys_area AS r ON r.id = d.sales_area_id
+        LEFT JOIN sys_office AS o ON o.id = a.company_id
+    </sql>
+
+    <select id="get" resultType="AntiRegionalDumping">
+        SELECT
+        <include refid="antiRegionalDumpingColumns"/>
+        FROM fwm_antiregional_data a
+        <include refid="antiRegionalDumpingJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="getAntiRegionlByQrCode" resultType="java.lang.Integer">
+        SELECT IFNULL(COUNT(1), 0) FROM fwm_antiregional_data a WHERE a.qrCode = #{qrCode} AND a.dealer_id = #{dealerId}
+    </select>
+
+    <select id="findList" resultType="AntiRegionalDumping">
+        SELECT
+        <include refid="antiRegionalDumpingColumns"/>
+        FROM fwm_antiregional_data AS a
+        <include refid="antiRegionalDumpingJoins"/>
+        <where>
+            AND a.del_flag = #{DEL_FLAG_NORMAL} AND f.create_date BETWEEN #{beginDate} AND DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+            <if test="company != null and company.id != null and company.id != ''">
+                AND a.company_id = #{company.id}
+            </if>
+            <if test="bsProduct != null and bsProduct.id != null and bsProduct.id != ''">
+                AND a.prod_id = #{bsProduct.id}
+            </if>
+            <choose>
+                <when test="dealer != null and dealer.id != null and dealer.id != ''">
+                    AND a.dealer_id IN (SELECT pd.id FROM bs_dealer AS pd WHERE pd.parent_id = #{dealer.id})
+                </when>
+                <otherwise>
+                    <if test="systemManager == false">
+                        AND a.dealer_id IN (SELECT pd.id FROM bs_dealer AS pd WHERE pd.grade = '1')
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+        GROUP BY p.prod_name, d.dealer_name
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY f.create_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findDetailList" resultType="AntiRegionalDumping">
+        SELECT
+        <include refid="antiRegionalDumpingDetailColumns"/>
+        FROM fwm_antiregional_data AS a
+        <include refid="antiRegionalDumpingJoins"/>
+        <where>
+            AND a.del_flag = #{DEL_FLAG_NORMAL} AND f.create_date BETWEEN #{beginDate} AND DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+            <if test="company != null and company.id != null and company.id != ''">
+                AND a.company_id = #{company.id}
+            </if>
+            <if test="bsProduct != null and bsProduct.id != null and bsProduct.id != ''">
+                AND a.prod_id = #{bsProduct.id}
+            </if>
+            <choose>
+                <when test="dealer != null and dealer.id != null and dealer.id != ''">
+                    AND a.dealer_id = #{dealer.id}
+                </when>
+                <otherwise>
+                    <if test="systemManager == false">
+                        AND a.dealer_id IN (SELECT pd.id FROM bs_dealer AS pd WHERE pd.grade = '1')
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY f.create_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO fwm_antiregional_data(
+        id,
+        query_history_id,
+        qrCode,
+        prod_id,
+        dealer_id,
+        company_id,
+        del_flag
+        ) VALUES (
+        #{id},
+        #{fwmQueryHistory.id},
+        #{qrCode},
+        #{bsProduct.id},
+        #{dealer.id},
+        #{company.id},
+        #{delFlag}
+        )
+    </insert>
+
+    <update id="delete">
+        UPDATE fwm_antiregional_data SET
+        del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

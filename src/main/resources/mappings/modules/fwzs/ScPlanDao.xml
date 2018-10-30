@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.ScPlanDao">
+    
+	<sql id="scPlanColumns">
+		a.id AS "id",
+		a.plan_no AS "planNo",
+		a.made_date AS "madeDate",
+		a.lline_id AS "llineId",
+		a.remark AS "remark",
+		a.status AS "status",
+		a.operate_by AS "operateBy",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="scPlanColumnsNew">
+		a.id AS "id",
+		a.plan_no AS "planNo",
+		p.id AS "bsProductList.id",
+		p.prod_no AS "bsProductList.prodNo",
+		p.pesticide_name AS "bsProductList.pesticideName",
+		p.prod_name AS "bsProductList.prodName",
+		prod_plan_mapping.id AS "pp.id",
+		prod_plan_mapping.plan_id AS "pp.plan_id",
+		prod_plan_mapping.prod_id AS "pp.prod_id",
+		prod_plan_mapping.indate AS "pp.indate",
+		prod_plan_mapping.check_plan_url AS "pp.checkPlanUrl",
+		prod_plan_mapping.batch_no AS "pp.batchNo",
+		prod_plan_mapping.plan_number AS "pp.planNumber",
+		prod_plan_mapping.real_number AS "pp.realNumber",
+		prod_plan_mapping.fwmfile_id AS "pp.fwmFileId",
+		prod_plan_mapping.del_flag AS "pp.delFlag",
+		prod_plan_mapping.remark AS "pp.remark",
+		s.spec_desc AS "bsProductList.prodSpec.specDesc",
+		a.made_date AS "madeDate",
+		a.lline_id AS "scLines.id",
+		l.line_name AS "scLines.lineName",
+		w.id AS "warehouse.id",
+		w.name AS "warehouse.name",
+		a.remark AS "remark",
+		a.status AS "status",
+		q.id AS "qId",
+		q.name AS "qName",
+		a.qc_count AS "qcCount",
+		a.operate_by AS "operateBy",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		u.name AS "userName",
+		a.del_flag AS "delFlag"
+	</sql>
+
+	<resultMap id="scPlanResult" type="ScPlan">
+		<id property="id" column="id" />
+		<result  property="planNo" column="planNo" />
+		<result  property="batchNo" column="batchNo" />
+		<result  property="madeDate" column="madeDate" />
+		<result  property="remark" column="remark" />
+		<result  property="status" column="status" />
+		<result  property="operateBy" column="operateBy" />
+		<result  property="createDate" column="createDate" />
+		<result  property="createBy.id" column="userName" />
+		<result  property="scLines.lineName" column="scLines.lineName" />
+		<result  property="scLines.id" column="scLines.id" />
+		<result  property="qcCount" column="qcCount" />
+		<result  property="updateDate" column="updateDate" />
+		<result  property="delFlag" column="delFlag" />
+        <association property="qcBy" javaType="User">
+            <id property="id" column="qId"/>
+            <result property="name" column="qName"/>
+        </association>
+		<collection property="bsProductList" ofType="BsProduct">
+			<id property="mappingId" column="pp.id" />
+			<id property="id" column="bsProductList.id" />
+			<id property="pesticideName" column="bsProductList.pesticideName" />
+			<id property="prodName" column="bsProductList.prodName" />
+			<id property="prodNo" column="bsProductList.prodNo" />
+			<id property="prodSpec.specDesc" column="bsProductList.prodSpec.specDesc" />
+			<id property="batchNo" column="pp.batchNo" />
+			<id property="indate" column="pp.indate" />
+			<id property="checkPlanUrl" column="pp.checkPlanUrl" />
+			<id property="fwmFileId" column="pp.fwmFileId" />
+			<id property="remark" column="pp.remark" />
+			<id property="planNumber" column="pp.planNumber" />
+			<id property="realNumber" column="pp.realNumber" />
+			<id property="warehouse.id" column="warehouse.id" />
+			<id property="warehouse.name" column="warehouse.name" />
+		</collection>
+	</resultMap>
+
+	<sql id="scPlanJoins">
+		LEFT JOIN sc_plan_product prod_plan_mapping ON prod_plan_mapping.plan_id = a.id
+  		LEFT JOIN bs_product p ON prod_plan_mapping.prod_id = p.id
+  		LEFT JOIN bs_warehouse w ON prod_plan_mapping.warehouse_id = w.id
+  		LEFT JOIN sc_lines l ON a.lline_id = l.id
+		LEFT JOIN fwm_spec s ON p.prod_spec = s.id
+		LEFT JOIN sys_office o ON p.company_id=o.id
+	    LEFT JOIN sys_user u ON u.id = a.create_by
+	    LEFT JOIN sys_user q ON q.id = a.qc_by
+	</sql>
+    
+	<select id="get" resultMap="scPlanResult">
+		SELECT 
+			<include refid="scPlanColumnsNew"/>
+		FROM sc_plan a
+			<include refid="scPlanJoins"/>
+		WHERE
+			a.id = #{id}
+	</select>
+
+	<select id="getByIdAndDelFlag" parameterType="map" resultMap="scPlanResult">
+		SELECT
+			<include refid="scPlanColumnsNew"/>
+		FROM sc_plan a
+			<include refid="scPlanJoins"/>
+		WHERE
+			a.del_flag = #{delFlag} AND prod_plan_mapping.del_flag = #{delFlag} AND a.id = #{id}
+	</select>
+
+	<select id="findList" resultMap="scPlanResult">
+		SELECT 
+			<include refid="scPlanColumnsNew"/>
+		FROM sc_plan a
+			<include refid="scPlanJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} AND prod_plan_mapping.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="planNo != null and planNo != ''">
+				AND LOWER (a.plan_no) LIKE
+				<if test="dbName == 'oracle'">#{planNo}||'%'</if>
+				<if test="dbName == 'mssql'">#{planNo}+'%'</if>
+				<if test="dbName == 'mysql'">concat(LOWER (#{planNo}),'%')</if>
+			</if>
+			<if test="batchNo != null and batchNo != ''">
+				AND LOWER (prod_plan_mapping.batch_no) LIKE
+				<if test="dbName == 'oracle'">#{batchNo}||'%'</if>
+				<if test="dbName == 'mssql'">#{batchNo}+'%'</if>
+				<if test="dbName == 'mysql'">concat(LOWER (#{batchNo}),'%')</if>
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findPlanByStatusIsNotDraft" resultMap="scPlanResult">
+		SELECT 
+			<include refid="scPlanColumnsNew"/>
+		FROM sc_plan a
+			<include refid="scPlanJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} AND prod_plan_mapping.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="status != null and status != ''">
+				AND a.status != #{status}
+			</if>
+			<if test="planNo != null and planNo != ''">
+				AND LOWER (a.plan_no) LIKE
+					<if test="dbName == 'oracle'">#{planNo}||'%'</if>
+					<if test="dbName == 'mssql'">#{planNo}+'%'</if>
+					<if test="dbName == 'mysql'">concat(LOWER (#{planNo}),'%')</if>
+			</if>
+			<if test="batchNo != null and batchNo != ''">
+				AND LOWER (prod_plan_mapping.batch_no) LIKE
+				<if test="dbName == 'oracle'">#{batchNo}||'%'</if>
+				<if test="dbName == 'mssql'">#{batchNo}+'%'</if>
+				<if test="dbName == 'mysql'">concat(LOWER (#{batchNo}),'%')</if>
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findPlanByStatus" resultMap="scPlanResult">
+		SELECT
+		<include refid="scPlanColumnsNew"/>
+		FROM sc_plan a
+		<include refid="scPlanJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} AND prod_plan_mapping.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="statusList != null and statusList.size>0">
+				AND a.status IN
+				<foreach collection="statusList" item="st" index="index" open="(" close=")"
+						 separator=",">
+					#{st}
+				</foreach>
+			</if>
+
+			<if test="planNo != null and planNo != ''">
+				AND LOWER (a.plan_no) LIKE
+				<if test="dbName == 'oracle'">#{planNo}||'%'</if>
+				<if test="dbName == 'mssql'">#{planNo}+'%'</if>
+				<if test="dbName == 'mysql'">concat(LOWER (#{planNo}),'%')</if>
+			</if>
+			<if test="batchNo != null and batchNo != ''">
+				AND LOWER (prod_plan_mapping.batch_no) LIKE
+				<if test="dbName == 'oracle'">#{batchNo}||'%'</if>
+				<if test="dbName == 'mssql'">#{batchNo}+'%'</if>
+				<if test="dbName == 'mysql'">concat(LOWER (#{batchNo}),'%')</if>
+			</if>
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <select id="findPlanByQC" resultMap="scPlanResult">
+        SELECT
+        <include refid="scPlanColumnsNew"/>
+        FROM sc_plan a
+        <include refid="scPlanJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL} AND prod_plan_mapping.del_flag = #{DEL_FLAG_NORMAL} AND a.qc_by = #{qcBy.id}
+            <if test="statusList != null and statusList.size>0">
+                AND a.status IN
+                <foreach collection="statusList" item="st" index="index" open="(" close=")"
+                         separator=",">
+                    #{st}
+                </foreach>
+            </if>
+
+            <if test="planNo != null and planNo != ''">
+                AND LOWER (a.plan_no) LIKE
+                <if test="dbName == 'oracle'">#{planNo}||'%'</if>
+                <if test="dbName == 'mssql'">#{planNo}+'%'</if>
+                <if test="dbName == 'mysql'">concat(LOWER (#{planNo}),'%')</if>
+            </if>
+            <if test="batchNo != null and batchNo != ''">
+                AND LOWER (prod_plan_mapping.batch_no) LIKE
+                <if test="dbName == 'oracle'">#{batchNo}||'%'</if>
+                <if test="dbName == 'mssql'">#{batchNo}+'%'</if>
+                <if test="dbName == 'mysql'">concat(LOWER (#{batchNo}),'%')</if>
+            </if>
+            ${sqlMap.dsf}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+	
+	<select id="findAllList" resultMap="scPlanResult">
+		SELECT 
+			<include refid="scPlanColumnsNew"/>
+		FROM sc_plan a
+		<include refid="scPlanJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sc_plan(
+			id,
+			plan_no,
+			made_date,
+			lline_id,
+			remark,
+			status,
+			operate_by,
+			qc_by,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{planNo},
+			#{madeDate},
+			#{scLines.id},
+			#{remark},
+			#{status},
+			#{operateBy},
+			#{qcBy.id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sc_plan SET 	
+			plan_no = #{planNo},
+			made_date = #{madeDate},
+			lline_id = #{scLines.id},
+			remark = #{remark},
+			status = #{status},
+			operate_by = #{operateBy},
+			qc_by = #{qcBy.id},
+			qc_count = #{qcCount},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updatePlanStatus">
+		UPDATE sc_plan SET status = #{status} WHERE id IN
+		<foreach collection="planList" item="planId" index="index" open="(" close=")"
+			separator=",">
+			 #{planId}
+		</foreach>
+	</update>
+	
+	<update id="delete">
+		UPDATE sc_plan SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

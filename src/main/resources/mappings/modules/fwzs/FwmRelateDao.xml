@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.FwmRelateDao">
+    
+	<sql id="fwmRelateColumns">
+		a.id AS "fwmQrcode.id",
+		a.qrcode AS "fwmQrcode.qrcode",
+		a.prod_id AS "fwmQrcode.prodId",
+		a.update_date AS "fwmQrcode.updateDate",
+		b.id AS "fwmBoxCode.id",
+		a.box_code AS "fwmBoxCode.boxCode",
+		b.update_date AS "fwmBoxCode.updateDate",
+		c.id AS "bigboxCode.id",
+		b.bigBox_code AS "bigboxCode.bigBoxCode",
+		c.update_date AS "bigboxCode.updateDate"
+	</sql>
+	<sql id="fwmRelateJoins">
+	LEFT JOIN fwm_box_code b ON a.box_code = b.box_code
+	LEFT JOIN fwm_bigbox_code c ON b.bigBox_code = c.big_box_code
+	LEFT JOIN sc_plan p on a.plan_id=p.id
+	</sql>
+    
+	<select id="get" resultType="FwmQrcode">
+		SELECT 
+			<include refid="fwmRelateColumns"/>
+		FROM fwm_qrcode a
+		<include refid="fwmRelateJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="FwmRelate">
+		SELECT 
+			<include refid="fwmRelateColumns"/>
+		FROM fwm_qrcode a
+		<include refid="fwmRelateJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="fwmQrcode != null and fwmQrcode.qrcode != null and fwmQrcode.qrcode!=''">
+				AND a.qrcode LIKE 
+					<if test="dbName == 'oracle'">#{fwmQrcode.qrcode}||'%'</if>
+					<if test="dbName == 'mssql'">#{fwmQrcode.qrcode}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{fwmQrcode.qrcode},'%')</if>
+			</if>
+			<if test="fwmBoxCode != null and fwmBoxCode.id != null and fwmBoxCode.id != ''">
+				AND a.box_code LIKE 
+					<if test="dbName == 'oracle'">#{fwmBoxCode.id}||'%'</if>
+					<if test="dbName == 'mssql'">#{fwmBoxCode.id}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{fwmBoxCode.id},'%')</if>
+			</if>
+			<if test="scPlan != null and scPlan.bsProduct != null and scPlan.bsProduct.id != null and scPlan.bsProduct.id != ''">
+				AND a.prod_id LIKE
+				<if test="dbName == 'oracle'">#{scPlan.bsProduct.id}||'%'</if>
+				<if test="dbName == 'mssql'">#{scPlan.bsProduct.id}+'%'</if>
+				<if test="dbName == 'mysql'">concat(#{scPlan.bsProduct.id},'%')</if>
+			</if>
+			<if test="scPlan != null and scPlan.id != null and scPlan.id != ''">
+				AND p.id LIKE 
+					<if test="dbName == 'oracle'">#{scPlan.id}||'%'</if>
+					<if test="dbName == 'mssql'">#{scPlan.id}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{scPlan.id},'%')</if>
+			</if>
+			<if test="scPlan != null and scPlan.planNo != null and scPlan.planNo != ''">
+				AND p.plan_no LIKE 
+					<if test="dbName == 'oracle'">#{scPlan.planNo}||'%'</if>
+					<if test="dbName == 'mssql'">#{scPlan.planNo}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{scPlan.planNo},'%')</if>
+			</if>
+			<if test="fwmQrcode != null and fwmQrcode.status != null and fwmQrcode.status!=''">
+				AND a.status = #{fwmQrcode.status}
+			</if>
+			<!-- <if test="bsProduct != null and bsProduct.id != null and bsProduct.id != ''">
+				AND a.prod_id = #{bsProduct.id}
+			</if>
+			<if test="fwmFile != null and fwmFile.id != null and fwmFile.id != ''">
+				AND a.file_id = #{fwmFile.id}
+			</if> -->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date, a.box_code, b.bigBox_code DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+
+	
+	<insert id="insert">
+		INSERT INTO fwm_qrcode(
+			id,
+			qrcode,
+			box_code,
+			plan_id,
+			status,
+			select_num,
+			prod_id,
+			file_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{qrcode},
+			#{fwmBoxCode.id},
+			#{scPlan.id},
+			#{status},
+			#{selectNum},
+			#{bsProduct.id},
+			#{fwmFile.id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	 <insert id="saveByBatch" parameterType="java.util.List">
+       INSERT INTO fwm_qrcode(
+			id,
+			qrcode,
+			box_code,
+			plan_id,
+			status,
+			select_num,
+			prod_id,
+			file_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES 
+        <foreach collection="fwmQrcodes" item="item" index="index"   separator=",">
+            (#{item.id}, 
+            #{item.qrcode},
+            #{item.fwmBoxCode.id},
+            #{item.scPlan.id},
+            #{item.status},
+           	#{item.selectNum},
+           	#{item.bsProduct.id},
+			#{item.fwmFile.id},
+			#{item.createBy.id},
+			#{item.createDate},
+			#{item.updateBy.id}, 
+			#{item.updateDate},
+			#{item.delFlag}
+            )
+        </foreach>
+    </insert>
+	<update id="update">
+		UPDATE fwm_qrcode SET 	
+			qrcode = #{qrcode},
+			box_code = #{fwmBoxCode.id},
+			plan_id = #{scPlan.id},
+			status = #{status},
+			select_num = #{selectNum},
+			prod_id = #{bsProduct.id},
+			file_id = #{fwmFile.id},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE fwm_qrcode SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

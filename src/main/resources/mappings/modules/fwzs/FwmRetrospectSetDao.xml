@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.FwmRetrospectSetDao">
+    
+	<sql id="fwmRetrospectSetColumns">
+		a.id AS "id",
+		a.prod_id AS "prodId",
+		a.property AS "property",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="fwmRetrospectSetJoins">
+	</sql>
+    
+	<select id="get" resultType="FwmRetrospectSet">
+		SELECT 
+			<include refid="fwmRetrospectSetColumns"/>
+		FROM fwm_retrospect_set a
+		<include refid="fwmRetrospectSetJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="FwmRetrospectSet">
+		SELECT 
+			<include refid="fwmRetrospectSetColumns"/>
+		FROM fwm_retrospect_set a
+		<include refid="fwmRetrospectSetJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="FwmRetrospectSet">
+		SELECT 
+			<include refid="fwmRetrospectSetColumns"/>
+		FROM fwm_retrospect_set a
+		<include refid="fwmRetrospectSetJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO fwm_retrospect_set(
+			id,
+			prod_id,
+			property,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{prodId},
+			#{property},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE fwm_retrospect_set SET 	
+			prod_id = #{prodId},
+			property = #{property},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE fwm_retrospect_set SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<select id="getRetrospectByProductId" resultType="FwmRetrospectSet">
+		SELECT 
+			<include refid="fwmRetrospectSetColumns"/>
+		FROM fwm_retrospect_set a
+		<include refid="fwmRetrospectSetJoins"/>
+		WHERE a.prod_id = #{productId}
+	</select>
+</mapper>

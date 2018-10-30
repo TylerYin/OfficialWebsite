@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.WarehouseDao">
+
+	<sql id="warehouseColumns">
+		w.id,
+		w.warehouse_no AS warehouseNo,
+		w.name,
+		w.leader,
+		w.address,
+		w.phone,
+		w.grade,
+		w.warehouse_info AS warehouseInfo,
+		w.longitude,
+		w.latitude,
+		w.size,
+		w.volume,
+		w.warehouse_jianma AS warehouseJianMa,
+		w.remark,
+		w.create_by AS "createBy.id",
+		w.create_date AS "createDate",
+		w.update_by AS "updateBy.id",
+		w.update_date AS "updateDate",
+		w.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="warehouseColumnsNew">
+		w.id,
+		w.warehouse_no AS warehouseNo,
+		w.name,
+		w.leader,
+		w.address,
+		w.phone,
+		w.grade,
+		w.warehouse_info AS warehouseInfo,
+		w.longitude,
+		w.latitude,
+		w.size,
+		w.volume,
+		w.warehouse_jianma AS warehouseJianMa,
+		w.remark,
+		w.create_by AS "createBy.id",
+		w.create_date AS "createDate",
+		w.update_by AS "updateBy.id",
+		w.update_date AS "updateDate",
+		w.del_flag AS "delFlag",
+		p.id AS "parentWarehouse.id",
+		p.warehouse_no AS "parentWarehouse.no",
+		p.name AS "parentWarehouse.name",
+		a.id AS "area.id",
+		a.name AS "area.name",
+		o.id AS "company.id",
+		o.name AS "company.name"
+	</sql>
+
+	<sql id="treeMenuDataColumns">
+		w.id,
+		w.name,
+		p.id AS "parentWarehouse.id",
+		p.name AS "parentWarehouse.name"
+	</sql>
+
+	<sql id="childrenWarehouseDataColumns">
+		w.id,
+		w.name,
+		c.id AS "childrenWarehouse.id",
+		c.name AS "childrenWarehouse.name"
+	</sql>
+
+	<sql id="treeMenuDataJoins">
+		LEFT JOIN bs_warehouse AS p ON w.parent_id = p.id
+		LEFT JOIN sys_office o ON w.company_id=o.id
+		LEFT JOIN sys_user u ON u.id = w.create_by
+	</sql>
+	
+	<sql id="warehouseJoins">
+	LEFT JOIN bs_warehouse AS p ON w.parent_id = p.id
+  	LEFT JOIN sys_office o ON w.company_id=o.id
+	LEFT JOIN sys_user u ON u.id = w.create_by
+  	LEFT JOIN sys_area AS a ON w.sales_area_id = a.id
+    </sql>
+
+	<resultMap id="warehouseResult" type="Warehouse">
+		<id property="id" column="id"/>
+		<result property="warehouseNo" column="warehouseNo"/>
+		<result property="name" column="name"/>
+		<result property="leader" column="leader"/>
+		<result property="address" column="address"/>
+		<result property="phone" column="phone"/>
+		<result property="grade" column="grade"/>
+		<result property="warehouseInfo" column="warehouseInfo"/>
+		<result property="longitude" column="longitude"/>
+		<result property="latitude" column="latitude"/>
+		<result property="size" column="size"/>
+		<result property="volume" column="volume"/>
+        <result property="warehouseJianMa" column="warehouseJianMa"/>
+		<result property="remark" column="remark"/>
+		<result property="createBy.id" column="createBy.id"/>
+		<result property="createDate" column="createDate"/>
+		<result property="updateBy.id" column="updateBy.id"/>
+		<result property="updateDate" column="updateDate"/>
+		<result property="delFlag" column="delFlag"/>
+
+		<association property="parentWarehouse" javaType="Warehouse">
+			<id property="id" column="parentWarehouse.id"/>
+            <result property="warehouseNo" column="parentWarehouse.no"/>
+			<result property="name" column="parentWarehouse.name"/>
+		</association>
+		<association property="company" javaType="Office">
+			<id property="id" column="company.id"/>
+			<result property="name" column="company.name"/>
+		</association>
+		<association property="salesArea" javaType="Area">
+			<id property="id" column="area.id"/>
+			<result property="name" column="area.name"/>
+		</association>
+	</resultMap>
+
+	<resultMap id="treeMenuDataResult" type="Warehouse">
+		<id property="id" column="id"/>
+		<result property="name" column="name"/>
+		<association property="parentWarehouse" javaType="Warehouse">
+			<id property="id" column="parentWarehouse.id"/>
+			<result property="name" column="parentWarehouse.name"/>
+		</association>
+	</resultMap>
+
+	<resultMap id="childrenWarehouseResult" type="Warehouse">
+		<id property="id" column="id"/>
+		<result property="name" column="name"/>
+		<association property="childrenWarehouse" javaType="Warehouse">
+			<id property="id" column="childrenWarehouse.id"/>
+			<result property="name" column="childrenWarehouse.name"/>
+		</association>
+	</resultMap>
+    
+	<select id="get" resultMap="warehouseResult">
+		SELECT
+			<include refid="warehouseColumnsNew"/>
+		FROM bs_warehouse w
+		<include refid="warehouseJoins"/>
+		WHERE w.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="warehouseResult">
+		SELECT
+			<include refid="warehouseColumnsNew"/>
+		FROM bs_warehouse w
+		<include refid="warehouseJoins"/>
+		WHERE w.del_flag = #{delFlag}
+
+		<if test="name != null and name != ''">
+			AND w.name LIKE concat(#{name},'%')
+		</if>
+		<if test="phone != null and phone != ''">
+			AND w.phone LIKE concat(#{phone},'%')
+		</if>
+		<if test="salesArea != null and salesArea.id != null and salesArea.id != ''">
+			AND (a.id = #{salesArea.id} OR a.id IN (SELECT id FROM sys_area WHERE parent_ids LIKE concat('%,',#{salesArea.id},'%')))
+		</if>
+		${sqlMap.dsf}
+		ORDER BY w.update_date DESC
+	</select>
+
+	<!-- 获取树型结构 -->
+	<select id="findTreeMenuDataList" resultMap="treeMenuDataResult">
+		SELECT
+		<include refid="treeMenuDataColumns"/>
+		FROM bs_warehouse w
+		<include refid="treeMenuDataJoins"/>
+		WHERE w.del_flag = #{delFlag} AND w.company_id = #{company.id}
+		ORDER BY w.update_date DESC
+	</select>
+
+	<!-- 查询指定仓库节点的子节点 -->
+	<select id="findChildrenWarehouse" parameterType="map" resultMap="childrenWarehouseResult">
+		SELECT
+		<include refid="childrenWarehouseDataColumns"/>
+		FROM bs_warehouse w LEFT JOIN bs_warehouse AS c ON w.id = c.parent_id
+		WHERE w.del_flag = #{delFlag}
+		<if test="warehouseId != null and warehouseId != ''">
+			AND w.id = #{warehouseId}
+		</if>
+		<if test="company != null and company != ''">
+			AND w.company_id = #{company}
+		</if>
+		ORDER BY w.update_date DESC
+	</select>
+
+	<insert id="insert">
+		INSERT INTO bs_warehouse(
+			id,
+			warehouse_no,
+			name,
+			parent_id,
+			leader,
+			address,
+			phone,
+			grade,
+			company_id,
+			sales_area_id,
+			warehouse_info,
+			longitude,
+			latitude,
+			size,
+			volume,
+			warehouse_jianMa,
+			remark,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{warehouseNo},
+			#{name},
+			#{parentWarehouse.id},
+			#{leader},
+			#{address},
+			#{phone},
+			#{grade},
+			#{company.id},
+			#{salesArea.id},
+			#{warehouseInfo},
+			#{longitude},
+			#{latitude},
+			#{size},
+			#{volume},
+			#{warehouseJianMa},
+			#{remark},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE bs_warehouse SET
+			name = #{name},
+			parent_id = #{parentWarehouse.id},
+			leader = #{leader},
+			address = #{address},
+			phone = #{phone},
+			grade = #{grade},
+			company_id = #{company.id},
+			sales_area_id = #{salesArea.id},
+			warehouse_info = #{warehouseInfo},
+			longitude = #{longitude},
+			latitude = #{latitude},
+			size = #{size},
+			volume = #{volume},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			warehouse_jianMa = #{warehouseJianMa},
+			remark = #{remark}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE bs_warehouse SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteWarehouseByIds">
+		UPDATE bs_warehouse SET
+		del_flag = #{DEL_FLAG_DELETE}
+		WHERE id IN
+		<foreach collection="allChildrenWarehouse" item="id" index="index" open="(" close=")"
+				 separator=",">
+			#{id}
+		</foreach>
+	</update>
+
+</mapper>

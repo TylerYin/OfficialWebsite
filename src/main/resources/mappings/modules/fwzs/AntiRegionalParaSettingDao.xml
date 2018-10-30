@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.AntiRegionalParaSettingDao">
+    
+	<sql id="antiRegionalParaSettingColumns">
+		a.id AS id,
+        a.company_id AS "company.id",
+        d.id AS "dealer.id",
+        d.dealer_name AS "dealer.name",
+        o.name AS "company.name",
+        a.anti_regional_threshold AS antiRegionalThreshold,
+		a.create_by AS "createBy.id",
+		a.create_date AS createDate,
+		a.update_by AS "updateBy.id",
+		a.update_date AS updateDate
+	</sql>
+	
+	<sql id="antiRegionalParaSettingJoins">
+	LEFT JOIN bs_dealer d ON d.id = a.dealer_id
+	LEFT JOIN sys_user u ON u.id = a.create_by
+	LEFT JOIN sys_office o ON o.id = u.company_id
+	</sql>
+    
+	<select id="get" resultType="AntiRegionalParaSetting">
+		SELECT 
+		<include refid="antiRegionalParaSettingColumns"/>
+		FROM fwm_antiregional_set a
+		<include refid="antiRegionalParaSettingJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+    <select id="findList" resultType="AntiRegionalParaSetting">
+        SELECT
+        <include refid="antiRegionalParaSettingColumns"/>
+        FROM fwm_antiregional_set a
+        <include refid="antiRegionalParaSettingJoins"/>
+        <where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            <choose>
+                <when test="dealer != null and dealer.id != null and dealer.id != ''">
+                    AND a.company_id = #{company.id} AND a.dealer_id = #{dealer.id}
+                </when>
+                <when test="!systemManager">
+                    AND a.company_id = #{company.id} AND a.dealer_id is null
+                </when>
+                <otherwise>
+                    <if test="company != null and company.id != null and company.id != ''">
+                        AND a.company_id = #{company.id}
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+	<insert id="insert">
+		INSERT INTO fwm_antiregional_set(
+			id,
+			company_id,
+			dealer_id,
+			anti_regional_threshold,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{company.id},
+			#{dealer.id},
+			#{antiRegionalThreshold},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE fwm_antiregional_set SET
+		anti_regional_threshold = #{antiRegionalThreshold},
+		update_by = #{updateBy.id},
+		update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+
+    <update id="delete">
+		UPDATE fwm_antiregional_set SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

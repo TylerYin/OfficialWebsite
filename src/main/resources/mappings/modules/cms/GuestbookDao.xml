@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.cms.dao.GuestBookDao">
+    
+	<sql id="cmsGuestBookColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.content AS "content",
+		a.name AS "name",
+		a.email AS "email",
+		a.phone AS "phone",
+		a.workunit AS "workunit",
+		a.ip AS "ip",
+		a.create_date AS "createDate",
+		a.re_user_id AS "reUser.id",
+		a.re_date AS "reDate",
+		a.re_content AS "reContent",
+		a.del_flag AS "delFlag",
+		u.name AS "reUser.name"		
+	</sql>
+	
+	<sql id="cmsGuestBookJoins">
+		LEFT JOIN sys_user u ON u.id = a.re_user_id
+	</sql>
+    
+	<select id="get" resultType="GuestBook">
+		SELECT 
+			<include refid="cmsGuestBookColumns"/>
+		FROM cms_guestBook a
+		<include refid="cmsGuestBookJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GuestBook">
+		SELECT 
+			<include refid="cmsGuestBookColumns"/>
+		FROM cms_guestBook a
+		<include refid="cmsGuestBookJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+            <if test="type != '' and type != null">
+                AND a.type = #{type}
+            </if>
+            <if test="content != null and content != ''">
+                AND a.content LIKE
+                <if test="dbName == 'oracle'">'%'||#{content}||'%'</if>
+                <if test="dbName == 'mssql'">'%'+#{content}+'%'</if>
+                <if test="dbName == 'mysql'">CONCAT('%', #{content}, '%')</if>
+            </if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GuestBook">
+		SELECT 
+			<include refid="cmsGuestBookColumns"/>
+		FROM cms_guestBook a
+		<include refid="cmsGuestBookJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+            <if test="type != '' and type != null">
+                AND a.type = #{type}
+            </if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO cms_guestBook(
+			id,
+			type,
+			content,
+			name,
+			email,
+			phone,
+			workunit,
+			ip,
+			create_date,
+			re_user_id,
+			re_date,
+			re_content,
+			del_flag
+		) VALUES (
+			#{id},
+			#{type},
+			#{content},
+			#{name},
+			#{email},
+			#{phone},
+			#{workunit},
+			#{ip},
+			#{createDate},
+			#{reUser.id},
+			#{reDate},
+			#{reContent},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE cms_guestBook SET
+			type = #{type},
+			content = #{content},
+			name = #{name},
+			email = #{email},
+			phone = #{phone},
+			workunit = #{workunit},
+			ip = #{ip},
+			create_date = #{createDate},
+			re_user_id = #{reUser.id},
+			re_date = #{reDate},
+			re_content = #{reContent},
+			del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+
+    <update id="updateStatusAsAuditing">
+        UPDATE cms_guestBook SET
+        del_flag = #{delFlag}
+        WHERE id = #{id}
+    </update>
+	
+	<update id="delete">
+		UPDATE cms_guestBook SET
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findByIdIn" resultType="GuestBook">
+		SELECT 
+			<include refid="cmsGuestBookColumns"/>
+		from cms_guestBook a where
+		<where>
+			id in ();
+		</where>		
+	</select>
+	
+</mapper>

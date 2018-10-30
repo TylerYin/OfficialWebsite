@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.api.dao.ScPlanApiDao">
+    
+	<sql id="scPlanColumns">
+		a.id AS "id",
+		a.plan_no AS "planNo",
+		pp.prod_id AS "productId",
+		p.prod_no AS "prodNo",
+		pp.batch_no AS "batchNo",
+		date_format(a.made_date, '%Y-%m-%d') AS "madeDate",
+		pp.plan_number AS "planNumber",
+		a.lline_id AS "scLinesId",
+		l.line_name AS "scLinesName",
+		date_format(pp.indate, '%Y-%m-%d') AS "indate"
+		
+	</sql>
+	<sql id="scPlanJoins">
+	LEFT JOIN sc_plan_product pp ON pp.plan_id = a.id
+	LEFT JOIN bs_product p ON pp.prod_id = p.id
+	LEFT JOIN sc_lines l ON a.lline_id = l.id
+	LEFT JOIN sys_office o ON p.company_id = o.id
+	</sql>
+	<select id="get" resultType="ScPlanVo">
+		SELECT 
+		a.id AS "id",
+		a.plan_no AS "planNo"
+		FROM sc_plan a
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ScPlanVo" >
+		SELECT 
+			<include refid="scPlanColumns"/>
+		FROM sc_plan a
+		<include refid="scPlanJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="lineNo != null and lineNo != ''">
+				AND l.line_no LIKE 
+					<if test="dbName == 'oracle'">#{lineNo}||'%'</if>
+					<if test="dbName == 'mssql'">#{lineNo}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{lineNo},'%')</if>
+			</if>
+			<if test="officeId != null and officeId != ''">
+				AND o.id LIKE 
+					<if test="dbName == 'oracle'">#{officeId}||'%'</if>
+					<if test="dbName == 'mssql'">#{officeId}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{officeId},'%')</if>
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!--更新计划信息  -->
+	
+	<update id="update">
+		UPDATE sc_plan SET 	
+			status = #{status},
+			operate_by = #{operateBy},
+			update_date = #{updateDate}
+		WHERE id = #{id};
+		
+		UPDATE sc_plan_product SET 	
+			real_number = #{realNumber}
+		WHERE plan_id = #{id}
+	</update>
+</mapper>

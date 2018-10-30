@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.OutProduct2BoxCodeMappingDao">
+
+    <sql id="product2BoxCodeMappingColumns">
+        m.boxCode,
+        m.boxCodeType,
+        m.outBound2ProductId,
+        m.create_date AS "createDate",
+        m.del_flag AS "delFlag"
+    </sql>
+
+    <sql id="product2BoxCodeMappingJoins">
+
+    </sql>
+
+    <sql id="product2BoxCodeMappingColumnsNew">
+        po.box_code,
+        po.box_code_type
+    </sql>
+
+    <sql id="outBound2ProductColumns">
+        o.id as id,
+        op.warehouse_id AS warehouseId,
+        op.prod_id AS prodId,
+        p.pack_rate AS packRate
+    </sql>
+
+    <sql id="product2BoxCodeMappingJoinsNew">
+        LEFT JOIN outbound_product AS op
+        ON o.id = op.outBound_id
+        LEFT JOIN outbound_boxcode AS po
+    </sql>
+
+    <sql id="outBound2ProductJoins">
+        LEFT JOIN outbound_product AS op ON o.id = op.outBound_id
+        LEFT JOIN bs_product AS p ON p.id = op.prod_id
+    </sql>
+
+    <resultMap id="outBound2ProductResult" type="OutBound">
+        <id property="id" column="id"/>
+        <association property="bsProduct" javaType="BsProduct">
+            <id property="id" column="prodId" />
+            <id property="packRate" column="packRate" />
+            <association property="warehouse" javaType="Warehouse">
+                <id property="id" column="warehouseId"/>
+            </association>
+        </association>
+    </resultMap>
+
+    <select id="getOutBound2Product" resultMap="outBound2ProductResult">
+        SELECT
+        <include refid="outBound2ProductColumns"/>
+        FROM outBound o
+        <include refid="outBound2ProductJoins"/>
+        WHERE op.id = #{outBound2ProductId}
+    </select>
+
+    <select id="getBoxCodeByOutBoundId" resultType="OutProduct2BoxCodeMapping">
+        SELECT
+        <include refid="product2BoxCodeMappingColumnsNew"/>
+        FROM outbound AS o
+        <include refid="product2BoxCodeMappingJoinsNew"/>
+        WHERE o.id = #{id}
+    </select>
+
+    <select id="get" resultType="OutProduct2BoxCodeMapping">
+        SELECT
+        <include refid="product2BoxCodeMappingColumns"/>
+        FROM outbound_boxcode m
+        <include refid="product2BoxCodeMappingJoins"/>
+        WHERE m.id = #{id}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO outbound_boxcode(
+        id,
+        box_code,
+        box_code_type,
+        outBound_product_id,
+        scan_date,
+        del_flag
+        ) VALUES (
+        #{id},
+        #{boxCode},
+        #{boxCodeType},
+        #{outBound2ProductId},
+        #{scanDate},
+        #{delFlag}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE outbound_boxcode SET
+        box_code=#{boxCode}
+        box_code_type=#{boxCodeType}
+        outBound_product_id=#{outBound2ProductId}
+        scan_date=#{scanDate}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE outbound_boxcode SET
+        del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteByOutBound2ProductMappingId">
+        UPDATE outbound_boxcode SET
+        del_flag = #{DEL_FLAG_DELETE}
+        WHERE outBound_product_id = #{outBound2ProductId}
+    </update>
+
+    <select id="getCountByOutBound2ProductId" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM outbound_boxcode AS b
+        WHERE b.outBound_product_id = #{outBound2ProductId}
+    </select>
+
+</mapper>

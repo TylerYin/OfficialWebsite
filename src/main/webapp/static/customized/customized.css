@@ -1,0 +1,93 @@
+/* 项目中自定义的CSS文件*/
+.colotBoxTitle
+{
+	text-align:center;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	font-weight: bold;
+	font-size: 16px;
+}
+
+.productInfoClass
+{
+	font-size: 32px;
+	display: none;
+}
+
+.hidden
+{
+	display: none;
+}
+
+.show
+{
+	display: inline;
+}
+
+.product
+{
+	width: 220px;
+}
+
+.p
+{
+	margin-left: 200px;
+}
+
+.inputWidth60{
+	width: 60px;
+}
+
+.inputWidth85{
+	width: 85px;
+}
+
+.inputWidth115{
+	width: 115px;
+}
+
+.inputWidth165{
+	width: 165px;
+}
+
+.operationTable{
+	border: none;
+}
+
+.fwmTrace {
+    width: 1000px;
+    border: none;
+    font-size: 14px;
+    line-height: 2;
+    margin-top: 20px;
+    margin-left: 20px
+}
+
+.fwmTrace span {
+    margin-top: 20px;
+}
+
+.operationTd {
+	border-style:none;
+}
+
+.menuContent{
+    display:none;
+    position: absolute;
+    background: #c2ccd1;
+}
+
+.menuTree{
+    margin-top:0;
+    width:160px;
+}
+
+.colorBoxTitle{
+    margin-top:20px;
+    margin-bottom:20px;
+}
+
+.scPlanCheck{
+    width: 25px;
+    height:25px;
+}

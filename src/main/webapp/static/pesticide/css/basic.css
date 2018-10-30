@@ -1,0 +1,131 @@
+@charset "utf-8";
+/* CSS Document */
+@charset "utf-8";
+
+*{margin:0; padding:0;font-family:"microsoft yahei";box-sizing: border-box;}
+div p{font-family:"microsoft yahei";}
+h1, h2, h3, h4, h5, h6 { font-size: 100%;}
+a {text-decoration: none;}
+ul,li{list-style: none;}
+img{display:inline-block;}
+html{font-size:50px;}
+body{font-size:24px;}
+@media screen and (min-width:320px){
+    html{font-size:21.333333333333332px;}
+    body{font-size:12px;padding-bottom:55px;}
+
+
+}
+@media screen and (min-width:360px){
+    html{font-size:24px;}
+    body{font-size:12px;padding-bottom:62px;}
+}
+@media screen and (min-width:375px){
+    html{font-size:25px;}
+    body{font-size:12px;padding-bottom:62px;}
+}
+@media screen and (min-width:384px){
+    html{font-size:25.6px;}
+    body{font-size:14px;padding-bottom:67px;}
+}
+@media screen and (min-width:400px){
+    html{font-size:26.666666666666668px;}
+    body{font-size:14px;padding-bottom:67px;}
+}
+@media screen and (min-width:414px){
+    html{font-size:27.6px;}
+    body{font-size:14px;padding-bottom:67px;}
+}
+@media screen and (min-width:424px){
+    html{font-size:28.266666666666667px;}
+    body{font-size:14px;padding-bottom:73px;}
+}
+@media screen and (min-width:480px){
+    html{font-size:32px;}
+    body{font-size:15.36px;padding-bottom:80px;}
+}
+@media screen and (min-width:540px){
+    html{font-size:36px;}
+    body{font-size:17.28px;padding-bottom:80px;}
+}
+@media screen and (min-width:720px){
+    html{font-size:48px;}
+    body{font-size:23.04px;padding-bottom:120px;}
+}
+@media screen and (min-width:750px){
+    html{font-size:50px;}
+    body{font-size:24px;padding-bottom:126px;}
+}
+@media screen and (min-width:1024px){
+    html{font-size:50px;}
+    body{font-size:24px;padding-bottom:129px;}
+}
+.img-responsive {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    vertical-align: middle;
+}
+.padding16{ padding: 16px;}
+.paddingtb0{padding-top: 0px;padding-bottom: 0px;}
+.paddingtopn{ padding-top: 0px;}
+.linered{  background:#009237;background:-moz-linear-gradient(top, #009237, #009237);  
+    background:-webkit-gradient(linear, 0 0, 0 bottom, from(#009237), to(#d80f12));  
+    background:-o-linear-gradient(top, #009237, #d80f12);}
+.headbg{height: 2.5rem; line-height: 2.5rem; background: #009237; font-size: .8rem; color: #fff; text-align:center; font-weight: 300;}
+.marpad{ margin:0px; padding: 0px;}
+.jianjunav{height:16px; line-height: 16px; width: 100%; background: #eeeeee;}
+fieldset {padding: 5px 10px 5px 10px;margin: 0 0px;border: 3px solid #eeeeee; }
+fieldset div{ line-height: 1rem; height: auto; vertical-align: middle;font-size:.6rem;}
+fieldset div.div1{color:#d53b06;}
+legend {display: block;width: auto;padding: 0;margin-bottom: 0px;font-size:.6rem;padding: 0px 3px;line-height: inherit;color: #009237;font-weight: bold;border: 0; }
+@media screen and (min-width:1000px){
+
+}
+@media screen and (min-width:1170px){
+   
+
+}
+
+.tablebox{  width:100%;  border: none;}
+
+.tablebox tr th{height: 2.2rem;font-size:.7rem; font-weight:bold; line-height: 2.2rem;border-bottom: 2px solid #eee; color: #009237; padding-left: 0px;}
+.tablebox tr td{border-collapse: collapse;  padding: 5px; height: 1.8rem; line-height:1.8rem;font-size:.6rem; border-top: none; border-bottom: 1px solid #eee;}
+.tablebox tr td.td1{color: #999;}
+.tablebox img{margin-top: -5px;}
+
+.navbar-fixed-bottom{ padding: 0px; margin:0px; border-top: solid 1px #dcdcdc; background: #efefef; height: 2.5rem;  color: #333; font-size: .5rem; text-align: center; }
+footer{width:100%; max-height:96px;height:auto; background: #fff;  clear: both; position: fixed;  vertical-align: middle; text-align: center; bottom: 0;   padding-top:-96px; border-top:1px solid #eee;}
+.linknavfoot{width:100%; text-align:center;clear: both;}
+.linknavfoot ul{ margin: 0px;}
+.linknavfoot li { text-align: center; margin: 8px 0px 8px 0px;   }
+.linknavfoot li a{ text-align:center;font-size: 0.5rem; color:#333;  display: block; font-weight:300; width: 100% ; height: 2rem;  }
+.linknavfoot li a img{text-align:center; width: auto; display:block; height: 1rem;  }
+.linknavfoot li a.green{ color: #009237}
+
+
+.content{}
+.content p{text-indent: 2em; line-height: 1rem; padding: 10px;}
+.button1{width: 100%; height: 2rem; line-height: 2rem; border-radius: .2rem; border: none; background: #009237; color: #fff; font-size: .7rem;margin-top:10px; font-weight: bold;}
+    
+.tabbox{ height: auto;  border-radius: .2rem; margin: 0px;border: 1px solid #009237; border-radius: .2rem; overflow: hidden; }
+.tabbox li{ text-align: center; padding: 0px;vertical-align: middle; height: auto; border-left: 1px solid #009237;border-right: 1px solid #009237;}
+.tabbox li.lib{border-left:transparent ;border-right:none;}
+.tabbox li a{color: #009237;  display:inline-block; padding: 0px;height: auto;  padding: .4rem 0px; width:100%; vertical-align: bottom;}
+.tabbox li a.active{ background: #009237; color: #fff; }
+
+.tableboxdetail{  width:100%;  border: none;}
+.tableboxdetail tr th{height: 2.2rem;font-size:.7rem; font-weight:bold; line-height: 2.2rem;border-bottom: 2px solid #eee; color: #009237; padding-left: 0px;}
+.tableboxdetail tr td{border-collapse: collapse;  padding: 5px; height: 1.8rem; line-height:1.8rem;font-size:.6rem; border-top: none; border: 1px solid #eee;}
+.tableboxdetail tr td.td1{color: #999;}
+.tableboxdetail img{margin-top: -5px;}
+.tableboxdetail tr td:first-child{ border-left:none; }
+.tableboxdetail tr:first-child  td{border-top:2px solid #eee;}
+.tableboxdetail tr td:last-child{ border-right:none; }
+.cpbox{}
+.cpbox p{color:#999; font-size:.5rem; line-height: .7rem; text-align: center;}
+.cpbox h3{color:#222; font-size: .7rem;text-align: center;}
+.attention{}
+.attention li{ border-bottom: 1px solid #ddd; font-size: .6rem; line-height: 2.0rem;  }
+.attention li:before{ display: inline-block; content: " ";width:.24rem; height: .24rem; font-size: 0px; line-height: 16px; border-radius: .12rem; background: #999; vertical-align: middle; margin-right: 5px;}
+.attention li span{display: block; color: #999; line-height: 1rem;  text-align: justify; font-size: .5rem; margin: -10px 0px 10px 10px;}

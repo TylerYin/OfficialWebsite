@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+    <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    <mapper namespace="com.fwzs.master.modules.fwzs.dao.RealtimeStockLevelDao">
+
+    <sql id="realtimeStockLevelColumns">
+        s.id,
+        s.warehouse_id,
+        s.product_id,
+        s.stock_level AS stockLevel,
+        s.create_by AS "createBy.id",
+        s.create_date AS "createDate",
+        s.update_by AS "updateBy.id",
+        s.update_date AS "updateDate",
+        s.del_flag AS "delFlag"
+    </sql>
+
+    <sql id="realtimeStockLevelDealerColumns">
+        s.id,
+        o.id AS "company.id",
+        o.name AS "company.name",
+        d.id AS "dealer.id",
+        d.dealer_name AS "dealer.name",
+        s.warehouse_id,
+        s.product_id,
+        s.stock_level AS stockLevel,
+        s.create_by AS "createBy.id",
+        s.create_date AS "createDate",
+        s.update_by AS "updateBy.id",
+        s.update_date AS "updateDate",
+        s.del_flag AS "delFlag"
+    </sql>
+
+    <sql id="realtimeStockLevelColumnsNew">
+        s.id,
+        o.id AS "company.id",
+        o.name AS "company.name",
+        w.name AS "warehouse_name",
+        w.leader AS "warehouse_leader",
+        w.address AS "warehouse_address",
+        w.phone AS "warehouse_phone",
+        p.id AS prodId,
+        p.prod_name AS "prod_name",
+        p.pack_rate AS "pack_rate",
+        s.stock_level AS "stockLevel",
+        s.create_by AS "createBy.id",
+        s.create_date AS "createDate",
+        s.update_by AS "updateBy.id",
+        s.update_date AS "updateDate",
+        s.del_flag AS "delFlag"
+    </sql>
+
+    <sql id="realtimeStockLevelDealerColumnsNew">
+        s.id,
+        o.id AS "company.id",
+        o.name AS "company.name",
+        d.id AS "dealer.id",
+        d.dealer_no AS "dealer.no",
+        d.dealer_name AS "dealer.name",
+        p.id AS prodId,
+        p.prod_name AS "prod_name",
+        p.pack_rate AS "pack_rate",
+        s.stock_level AS "stockLevel",
+        s.create_by AS "createBy.id",
+        s.create_date AS "createDate",
+        s.update_by AS "updateBy.id",
+        s.update_date AS "updateDate",
+        s.del_flag AS "delFlag"
+    </sql>
+
+    <sql id="realtimeStockLevelJoins">
+        LEFT JOIN bs_warehouse AS w ON s.warehouse_id = w.id
+        LEFT JOIN bs_product AS p ON s.product_id = p.id
+        LEFT JOIN fwm_spec sp ON p.prod_spec=sp.id
+        LEFT JOIN sys_office o ON s.company_id=o.id
+        LEFT JOIN sys_user u ON s.create_by=u.id
+    </sql>
+
+    <sql id="realtimeStockLevelDealerJoins">
+        LEFT JOIN bs_product AS p ON s.product_id = p.id
+        LEFT JOIN bs_dealer AS d ON s.dealer_id = d.id
+        LEFT JOIN sys_office o ON s.company_id=o.id
+        LEFT JOIN sys_user u ON s.create_by=u.id
+    </sql>
+
+    <sql id="realtimeStockLevelJoinsNew">
+        LEFT JOIN bs_warehouse AS w ON s.warehouse_id = w.id
+        LEFT JOIN bs_product AS p ON s.product_id = p.id
+    </sql>
+
+    <resultMap id="realtimeStockLevelResult" type="RealtimeStockLevel">
+        <id property="id" column="id"/>
+        <result property="companyId" column="companyId"/>
+        <result property="dealerId" column="dealerId"/>
+        <result property="stockLevel" column="stockLevel"/>
+        <result property="createBy.id" column="createBy.id"/>
+        <result property="createDate" column="createDate"/>
+        <result property="updateBy.id" column="updateBy.id"/>
+        <result property="updateDate" column="updateDate"/>
+        <result property="delFlag" column="delFlag"/>
+
+        <association property="warehouse" javaType="Warehouse">
+            <id property="id" column="warehouse_id"/>
+            <result property="name" column="warehouse_name"/>
+            <result property="address" column="warehouse_address"/>
+            <result property="leader" column="warehouse_leader"/>
+            <result property="phone" column="warehouse_phone"/>
+        </association>
+
+        <association property="company" javaType="Office">
+            <id property="id" column="company.id"/>
+            <result property="name" column="company.name"/>
+        </association>
+
+        <association property="dealer" javaType="Dealer">
+            <id property="id" column="dealer.id"/>
+            <id property="dealerNo" column="dealer.no"/>
+            <result property="name" column="dealer.name"/>
+        </association>
+
+        <association property="bsProduct" javaType="BsProduct">
+            <id property="id" column="prodId"/>
+            <result property="prodName" column="prod_name"/>
+            <result property="packRate" column="pack_rate"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="realtimeStockLevelDealerResult" type="RealtimeStockLevel">
+        <id property="id" column="id"/>
+        <result property="companyId" column="companyId"/>
+        <result property="dealerId" column="dealerId"/>
+        <result property="stockLevel" column="stockLevel"/>
+        <result property="createBy.id" column="createBy.id"/>
+        <result property="createDate" column="createDate"/>
+        <result property="updateBy.id" column="updateBy.id"/>
+        <result property="updateDate" column="updateDate"/>
+        <result property="delFlag" column="delFlag"/>
+
+        <association property="warehouse" javaType="Warehouse">
+            <id property="id" column="warehouse_id"/>
+            <result property="name" column="warehouse_name"/>
+            <result property="address" column="warehouse_address"/>
+            <result property="leader" column="warehouse_leader"/>
+            <result property="phone" column="warehouse_phone"/>
+        </association>
+
+        <association property="company" javaType="Office">
+            <id property="id" column="company.id"/>
+            <result property="name" column="company.name"/>
+        </association>
+
+        <association property="dealer" javaType="Dealer">
+            <id property="id" column="dealer.id"/>
+            <result property="name" column="dealer.name"/>
+        </association>
+
+        <association property="bsProduct" javaType="BsProduct">
+            <id property="id" column="prodId"/>
+            <result property="prodName" column="prod_name"/>
+            <result property="packRate" column="pack_rate"/>
+        </association>
+    </resultMap>
+
+    <select id="get" resultMap="realtimeStockLevelResult">
+        SELECT
+        <include refid="realtimeStockLevelColumnsNew"/>
+        FROM stock_realtime s
+        <include refid="realtimeStockLevelJoins"/>
+        WHERE s.id = #{id}
+    </select>
+
+    <select id="findEnterpriseList" resultMap="realtimeStockLevelResult">
+        SELECT
+        <include refid="realtimeStockLevelColumnsNew"/>
+        FROM stock_realtime s
+        <include refid="realtimeStockLevelJoins"/>
+        WHERE s.del_flag = #{delFlag} AND s.dealer_id IS NULL
+        <if test="company != null and company.id != null and company.id != ''">
+            AND s.company_id = #{company.id}
+        </if>
+        <if test="warehouse != null and warehouse.id != null and warehouse.id != ''">
+            AND w.id LIKE concat(#{warehouse.id},'%')
+        </if>
+        <if test="bsProduct != null and bsProduct.id != null and bsProduct.id != ''">
+            AND p.id = #{bsProduct.id}
+        </if>
+        <if test="bsProduct != null and bsProduct.prodSpec != null and bsProduct.prodSpec.specCode != null and bsProduct.prodSpec.specCode != ''">
+            AND sp.spec_code = #{bsProduct.prodSpec.specCode}
+        </if>
+        ORDER BY s.update_date DESC
+    </select>
+
+    <select id="findDealerList" resultMap="realtimeStockLevelResult">
+        SELECT
+        <include refid="realtimeStockLevelDealerColumnsNew"/>
+        FROM stock_realtime s
+        <include refid="realtimeStockLevelDealerJoins"/>
+        WHERE s.del_flag = #{delFlag}
+        <if test="company != null and company.id != null and company.id != ''">
+            AND s.company_id = #{company.id}
+        </if>
+        <if test="dealer != null and dealer.id != null and dealer.id != ''">
+            AND s.dealer_id = #{dealer.id}
+        </if>
+        <if test="bsProduct != null and bsProduct.id != null and bsProduct.id != ''">
+            AND p.id = #{bsProduct.id}
+        </if>
+        ORDER BY s.update_date DESC
+    </select>
+
+    <select id="findDealerForCompanyList" resultMap="realtimeStockLevelResult">
+        SELECT
+        <include refid="realtimeStockLevelDealerColumnsNew"/>
+        FROM stock_realtime s
+        <include refid="realtimeStockLevelDealerJoins"/>
+        WHERE s.del_flag = #{delFlag} AND s.dealer_id IS NOT NULL
+        <if test="company != null and company.id != null and company.id != ''">
+            AND s.company_id = #{company.id}
+        </if>
+        <if test="bsProduct != null and bsProduct.id != null and bsProduct.id != ''">
+            AND p.id = #{bsProduct.id}
+        </if>
+        ORDER BY s.update_date DESC
+    </select>
+
+    <select id="findStock" resultMap="realtimeStockLevelResult">
+        SELECT
+        <include refid="realtimeStockLevelColumns"/>
+        FROM stock_realtime AS s
+        WHERE s.del_flag = #{delFlag}
+        <if test="warehouse != null and warehouse.id != null and warehouse.id != ''">
+            AND s.warehouse_id = #{warehouse.id}
+        </if>
+        <if test="bsProduct != null and bsProduct.id != null and bsProduct.id != ''">
+            AND s.product_id = #{bsProduct.id}
+        </if>
+        <if test="dealer != null and dealer.id != null and dealer.id != ''">
+            AND s.dealer_id = #{dealer.id}
+        </if>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO stock_realtime(
+        id,
+        company_id,
+        dealer_id,
+        warehouse_id,
+        product_id,
+        stock_level,
+        create_by,
+        create_date,
+        update_by,
+        update_date,
+        del_flag
+        ) VALUES (
+        #{id},
+        #{company.id},
+        #{dealer.id},
+        #{warehouse.id},
+        #{bsProduct.id},
+        #{stockLevel},
+        #{createBy.id},
+        #{createDate},
+        #{updateBy.id},
+        #{updateDate},
+        #{delFlag}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE stock_realtime SET
+        stock_level = #{stockLevel},
+        update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE stock_realtime SET
+        del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+</mapper>

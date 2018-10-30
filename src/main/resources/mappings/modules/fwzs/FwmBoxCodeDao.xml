@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fwzs.master.modules.fwzs.dao.FwmBoxCodeDao">
+    
+	<sql id="fwmBoxCodeColumns">
+		a.id AS "id",
+		a.box_code AS "boxCode",
+		a.plan_id AS "planId",
+		a.status AS "status",
+		a.bigbox_code AS "bigboxCode",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="fwmBoxCodeJoins">
+	</sql>
+    
+	<select id="get" resultType="FwmBoxCode">
+		SELECT 
+			<include refid="fwmBoxCodeColumns"/>
+		FROM fwm_box_code a
+		<include refid="fwmBoxCodeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="FwmBoxCode">
+		SELECT 
+			<include refid="fwmBoxCodeColumns"/>
+		FROM fwm_box_code a
+		<include refid="fwmBoxCodeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="boxCode != null and boxCode != ''">
+				AND a.box_code = #{boxCode}
+			</if>
+			<if test="planId != null and planId != ''">
+				AND a.plan_id = #{planId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="FwmBoxCode">
+		SELECT 
+			<include refid="fwmBoxCodeColumns"/>
+		FROM fwm_box_code a
+		<include refid="fwmBoxCodeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO fwm_box_code(
+			id,
+			box_code,
+			plan_id,
+			status,
+			bigbox_code,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag
+		) VALUES (
+			#{id},
+			#{boxCode},
+			#{planId},
+			#{status},
+			#{bigboxCode},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE fwm_box_code SET 	
+			box_code = #{boxCode},
+			plan_id = #{planId},
+			status = #{status},
+			bigbox_code = #{bigboxCode},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE fwm_box_code SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+    <select id="findBoxCodeCount" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM fwm_box_code
+        WHERE del_flag= #{delFlag}
+        <choose>
+            <when test="status =='2'.toString()">
+                AND box_code = #{boxCode}
+            </when>
+            <otherwise>
+                AND bigBox_code = #{bigboxCode}
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>
