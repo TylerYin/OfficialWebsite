@@ -109,7 +109,6 @@
     <orderEntry type="library" name="Maven: joda-time:joda-time:2.6" level="project" />
     <orderEntry type="library" name="Maven: org.activiti:activiti-spring:5.21.0" level="project" />
     <orderEntry type="library" name="Maven: commons-dbcp:commons-dbcp:1.4" level="project" />
-    <orderEntry type="library" name="Maven: commons-pool:commons-pool:1.5.4" level="project" />
     <orderEntry type="library" name="Maven: org.activiti:activiti-explorer:5.21.0" level="project" />
     <orderEntry type="library" name="Maven: org.activiti:activiti-json-converter:5.21.0" level="project" />
     <orderEntry type="library" name="Maven: math.geom2d:javaGeom:0.11.1" level="project" />
